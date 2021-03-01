@@ -1,0 +1,36 @@
+{
+  "name": "rextjs",
+  "version": "1.0.0",
+  "description": "REXT is a client side image editor that uses GPU.",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pelusanchez/rext.git"
+  },
+  "keywords": [
+    "image",
+    "editor",
+    "javascript",
+    "client",
+    "side",
+    "browser",
+    "image",
+    "editor",
+    "image",
+    "tool"
+  ],
+  "author": "David Iglesias",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/pelusanchez/rext/issues"
+  },
+  "homepage": "https://github.com/pelusanchez/rext#readme",
+  "devDependencies": {
+    "ts-loader": "^8.0.17",
+    "typescript": "^4.2.2",
+    "webpack": "^5.24.2"
+  }
+}
