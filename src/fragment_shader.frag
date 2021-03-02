@@ -105,7 +105,7 @@ vec4 image_process(vec4 PIXEL_COLOR) {
 	*/	
  	float _max = max(PIXEL_COLOR.r, max(PIXEL_COLOR.g, PIXEL_COLOR.b));
  	float _min = min(PIXEL_COLOR.r, min(PIXEL_COLOR.g, PIXEL_COLOR.b));
- 	vec2 sv_pixel = vec2(1 - _min / _max, _max);
+ 	vec2 sv_pixel = vec2(1.0 - _min / _max, _max);
 
 	sv_pixel.y = getLightMatch(sv_pixel.y);
 
@@ -133,14 +133,15 @@ vec4 image_process(vec4 PIXEL_COLOR) {
 	sv_pixel.y = clamp(sv_pixel.y, 0.0, 1.0);
 	
 	// Transform sv to rgb
-	vec3 rgb_pix = PIXEL_COLOR;
-	if (sv_pixel.x > 0) {
+	vec3 rgb_pix = vec3(PIXEL_COLOR.r, PIXEL_COLOR.g, PIXEL_COLOR.b);
+	if (sv_pixel.x > 0.0) {
+		float k = - sv_pixel.x / (1.0 - _min / _max);
 		// Update saturation
 		rgb_pix = (_max - rgb_pix) * k + _max;
 		// Update value
 		rgb_pix *= sv_pixel.y / _max;
 	} else {
-		rgb_pix.r = rgb_pix.g = rgb_pix.b = sv_pixel.v;
+		rgb_pix.r = rgb_pix.g = rgb_pix.b = sv_pixel.y;
 	}
 
 	/* Now we dont need constant hue. Usiing rgb space */
@@ -164,7 +165,9 @@ vec4 image_process(vec4 PIXEL_COLOR) {
 	
 	// Black and White
 	if (u_bAndW != 0.0) {
-		rgb_pix = mix(rgb_pix, mono, u_bAndW);
+		rgb_pix.r = mix(rgb_pix.r, mono, u_bAndW);
+		rgb_pix.g = mix(rgb_pix.g, mono, u_bAndW);
+		rgb_pix.b = mix(rgb_pix.b, mono, u_bAndW);
 	}
 
 	return vec4(rgb_pix, 1.0);

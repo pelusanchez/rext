@@ -1,5 +1,5 @@
 {
-  "name": "rextjs",
+  "name": "rext-image-editor",
   "version": "1.0.0",
   "description": "REXT is a client side image editor that uses GPU.",
   "main": "build/index.js",

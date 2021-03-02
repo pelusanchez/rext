@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script languaje="javascript" src="../build/index.js"></script>
+    <script languaje="javascript">
+      let rext = null;
+
+      function loadImage() {
+        rext = new RextEditor.RextEditor(
+        document.querySelector("#frame"),
+        {
+          maxResolution: 10000000,
+          maxEditionResolution: 10000000 / 4,
+        });
+        document.querySelector("#file").addEventListener("change", (e) => {
+          let imageReader = new FileReader();
+          const target = e.target;
+          if (target.files[0]) {
+            rext.load(URL.createObjectURL(target.files[0]))
+          }
+        })
+      }
+      window.addEventListener('load', loadImage)
+    </script>
+  </head>
+  <body>
+    <input type="file" id="file"/>
+    <canvas width="1200" height="800" id="frame"></canvas>
+  </body>
+</html>

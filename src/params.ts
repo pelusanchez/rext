@@ -35,8 +35,8 @@ export const defaults : Params = {
 	saturation: 0, // [0-100]
 	contrast: 0, // [0-100]
 	sharpen: 0,
-	masking: 0.5,
-	sharpen_radius: 1,
+	masking: 0,
+	sharpen_radius: 0,
 	radiance: 0,
 	highlights: 0,
 	shadows: 0,
@@ -44,7 +44,7 @@ export const defaults : Params = {
 	blacks: 0,
 	dehaze: 0,
   bAndW: 0,
-	atmosferic_light: 0.7,
+	atmosferic_light: 0,
   lightFill: 0,
   lightColor: 0,
   lightSat: 1,

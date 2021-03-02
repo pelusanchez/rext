@@ -1,1 +1,2 @@
-import './editor'
+import { RextEditor } from './editor'
+export { RextEditor };
