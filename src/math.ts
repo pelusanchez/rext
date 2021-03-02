@@ -1,3 +1,7 @@
+export const clamp = (a: number, b: number, c: number) => {
+  return (a < b) ? b : (a > c) ? c : a;
+}
+
 function resTreatment(arr: number[]) {
 	var l = arr.length;
 	for (var i = 0; i < l; i++) {

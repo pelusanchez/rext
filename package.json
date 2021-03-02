@@ -4,6 +4,7 @@
   "description": "REXT is a client side image editor that uses GPU.",
   "main": "build/index.js",
   "scripts": {
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -29,8 +30,10 @@
   },
   "homepage": "https://github.com/pelusanchez/rext#readme",
   "devDependencies": {
+    "raw-loader": "^4.0.2",
     "ts-loader": "^8.0.17",
     "typescript": "^4.2.2",
-    "webpack": "^5.24.2"
+    "webpack": "^5.24.2",
+    "webpack-cli": "^4.5.0"
   }
 }
