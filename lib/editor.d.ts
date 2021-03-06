@@ -16,7 +16,8 @@ export declare class RextEditor {
     config: Config;
     private uniforms;
     LIGHT_MATCH: number[];
-    constructor(canvas: HTMLCanvasElement, config?: Config);
+    constructor(canvas?: HTMLCanvasElement, config?: Config);
+    setCanvas(canvas: HTMLCanvasElement): void;
     updateParam(param: string, value: number): void;
     load(url: string): void;
     setLog(log: Log): void;

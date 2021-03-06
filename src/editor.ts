@@ -25,10 +25,7 @@ const RAF = getRequestAnimationFrame();
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
-const parameters = clone(defaults)
-
-
-var realImage : any = null;
+let realImage : any = null;
 
 
 interface Log {
@@ -105,12 +102,18 @@ export class RextEditor {
   	return _r;
   })();
 
-  constructor(canvas: HTMLCanvasElement, config?: Config) {
+  constructor(canvas?: HTMLCanvasElement, config?: Config) {
     console.log("Constructor called")
-    this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
+    if (canvas) {
+      this.setCanvas(canvas)
+    }
     if (config) {
       this.config = config
     }
+  }
+
+  setCanvas(canvas: HTMLCanvasElement) {
+    this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
   }
 
   updateParam(param: string, value: number) {
