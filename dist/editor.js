@@ -100,18 +100,24 @@ var RextEditor = /** @class */ (function () {
         updateKeys.forEach(function (paramKey) {
             _this.updateParam(paramKey, params[paramKey]);
         });
-        var updates = new Set(updateKeys.filter(function (key) { return paramsCallbacks[key] !== null; })
+        var updates = this.getCallbacks(updateKeys);
+        /* Update with callbacks */
+        updates.forEach(function (callbackName) {
+            _this.runCallback(callbackName);
+        });
+        this.update();
+    };
+    RextEditor.prototype.getCallbacks = function (updatedParams) {
+        var callbacks = new Set(updatedParams.filter(function (key) { return paramsCallbacks[key] !== undefined && paramsCallbacks[key] !== null; })
             .map(function (key) { return paramsCallbacks[key]; })
             .reduce(function (acc, v) { return acc.concat(v); }, []));
-        /* Update with callbacks */
-        updates.forEach(this.runCallback);
+        return Array.from(callbacks);
     };
     RextEditor.prototype.updateParam = function (param, value) {
         var keys = Object.keys(this.params);
         if (keys.includes(param)) {
             // @ts-ignore
             this.params[param] = value;
-            this.update();
         }
         else {
             this.log.error("Param " + param + " does not exists");

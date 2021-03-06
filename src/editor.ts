@@ -96,7 +96,7 @@ export class RextEditor {
     this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
   }
 
-  runCallback(callbackName: "generateLightning" | "kernel_update" | "updateTempTint") {
+  runCallback(callbackName: string) {
     switch (callbackName) {
       case "generateLightning":
         this.generateLightning();
@@ -121,7 +121,9 @@ export class RextEditor {
     const updates = this.getCallbacks(updateKeys);
 
     /* Update with callbacks */
-    updates.forEach(this.runCallback)
+    updates.forEach(callbackName => {
+      this.runCallback(callbackName)
+    })
 
     this.update();
   }

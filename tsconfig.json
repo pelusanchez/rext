@@ -8,6 +8,6 @@
     "allowJs": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "babel.config.js"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules/**/*", "**/*.spec.ts"]
 }
