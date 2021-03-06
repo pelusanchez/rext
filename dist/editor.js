@@ -1,8 +1,7 @@
 import { getCuadraticFunction } from './lib/math';
 import { asArray, getLuma, hsv2rgb } from './lib/color';
 import { defaultParams, TEMP_DATA } from './lib/constants';
-var FRAGMENT_SHADER = require('./shaders/fragment_shader.frag').default;
-var VERTEX_SHADER = require('./shaders/vertex_shader.vert').default;
+import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index';
 var clone = function (obj) { return JSON.parse(JSON.stringify(obj)); };
 var realImage = null;
 var LogFacade = /** @class */ (function () {

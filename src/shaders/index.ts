@@ -1,4 +1,4 @@
-/** * David Iglesias. All rights reserved */
+const FRAGMENT_SHADER = `/** * David Iglesias. All rights reserved */
 precision mediump float;
 uniform sampler2D u_image;
 uniform vec2 u_textureSize;
@@ -138,3 +138,14 @@ void main() {
   gl_FragColor = vec4(rgb_pix, 1.0);
 
 }
+`
+const VERTEX_SHADER = `attribute vec2 a_position;
+attribute vec2 a_texCoord;
+uniform vec2 u_resolution;
+varying vec2 v_texCoord;
+void main() {
+  vec2 dist = a_position / u_resolution;
+  gl_Position = vec4((dist * 2.0 - 1.0) * vec2(1, -1), 0, 1);
+  v_texCoord = a_texCoord;
+}`
+export { FRAGMENT_SHADER, VERTEX_SHADER }

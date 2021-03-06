@@ -1,9 +1,9 @@
+
 import { getCuadraticFunction } from './lib/math'
 import { Config, Params, UniformPointer } from './models/models';
 import { asArray, getLuma, hsv2rgb } from './lib/color'
 import { defaultParams, TEMP_DATA } from './lib/constants';
-const FRAGMENT_SHADER = require('./shaders/fragment_shader.frag').default
-const VERTEX_SHADER = require('./shaders/vertex_shader.vert').default
+import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
