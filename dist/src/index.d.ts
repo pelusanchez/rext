@@ -1,0 +1,1 @@
+export { RextEditor } from './editor';

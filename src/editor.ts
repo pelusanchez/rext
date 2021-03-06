@@ -60,7 +60,7 @@ export class RextEditor {
 
   private WIDTH: number = 0
   private HEIGHT: number = 0
-  private log: Log = new LogFacade()
+  log: Log = new LogFacade()
   private config: Config = {
     resolutionLimit: 1000000,
     editionResolutionLimit: 1000000,
@@ -118,20 +118,27 @@ export class RextEditor {
       this.updateParam(paramKey, params[paramKey]);
     })
 
-    const updates = new Set(updateKeys.filter(key => paramsCallbacks[key] !== null)
-      .map(key => paramsCallbacks[key])
-      .reduce((acc, v) => acc.concat(v), []));
+    const updates = this.getCallbacks(updateKeys);
 
     /* Update with callbacks */
     updates.forEach(this.runCallback)
+
+    this.update();
   }
 
-  updateParam(param: string, value: number) {
+  getCallbacks(updatedParams: string[]) : string[] {
+    const callbacks = new Set(
+      updatedParams.filter(key => paramsCallbacks[key] !== undefined && paramsCallbacks[key] !== null)
+      .map(key => paramsCallbacks[key])
+      .reduce((acc, v) => acc.concat(v), []));
+    return Array.from(callbacks)
+  }
+
+  private updateParam(param: string, value: number) {
     const keys = Object.keys(this.params)
     if (keys.includes(param)) {
       // @ts-ignore
       this.params[param] = value
-      this.update()
     } else {
       this.log.error(`Param ${param} does not exists`)
     }
