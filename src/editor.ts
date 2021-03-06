@@ -34,6 +34,7 @@ export class RextEditor {
 
   private params: Params = clone(defaultParams)
   private gl : WebGLRenderingContext = null;
+  private canvas : HTMLCanvasElement = null;
   private program : any = null;
   private pointers: UniformPointer = {
     positionLocation: null,
@@ -93,6 +94,7 @@ export class RextEditor {
   }
 
   setCanvas(canvas: HTMLCanvasElement) {
+    this.canvas = canvas
     this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
   }
 
@@ -102,7 +104,7 @@ export class RextEditor {
         this.generateLightning();
       case "kernel_update":
         this.updateKernel();
-      case "updateTempTint":
+      case "updateTemptint":
         this.updateTemptint();
     }
     this.log.warn(`No callback ${callbackName} exists`)
@@ -322,6 +324,17 @@ export class RextEditor {
     return kernel.reduce((a, b) => a + b);
   }
 
+  blob(image: HTMLImageElement, type?: string, quality?: number) : Promise<Blob> {
+    return new Promise(async (resolve, reject) => {
+      this.render(image, true);
+      setTimeout(() => { // Wait rendering...
+        this.canvas.toBlob((blob) => {
+          resolve(blob)
+        }, type || "image/jpeg", quality || 0.95);
+      }, 100);
+    })
+  }
+
   /**
    * render
    * Prepare the environment to edit the image
@@ -331,7 +344,7 @@ export class RextEditor {
    */
 
 
-  private render(image: any, preventRenderImage?: boolean) {
+  private render(image: HTMLImageElement, preventRenderImage?: boolean) {
     // Load GSLS programs
     var VERTEX_SHADER_CODE = createShader(this.gl, this.gl.VERTEX_SHADER, VERTEX_SHADER);
   	var FRAGMENT_SHADER_CODE = createShader(this.gl, this.gl.FRAGMENT_SHADER, FRAGMENT_SHADER);

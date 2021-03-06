@@ -86,7 +86,7 @@ var RextEditor = /** @class */ (function () {
                 this.generateLightning();
             case "kernel_update":
                 this.updateKernel();
-            case "updateTempTint":
+            case "updateTemptint":
                 this.updateTemptint();
         }
         this.log.warn("No callback " + callbackName + " exists");
