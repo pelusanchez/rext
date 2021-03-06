@@ -3,7 +3,7 @@
  */
 
 import { clamp } from "./math";
-import { vec3 } from "./models";
+import { vec3 } from "../models/models";
 
 export const getLuma = (rgb_pix: vec3) : number => {
   return 0.2126 * rgb_pix.x + 0.7152 * rgb_pix.y + 0.0722 * rgb_pix.z;

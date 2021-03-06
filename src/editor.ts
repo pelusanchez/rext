@@ -1,32 +1,13 @@
-import { getCuadraticFunction } from './math'
-import { Config, UniformPointer, vec3 } from './models';
-import { Params, defaults } from './params'
-import { asArray, getLuma, hsv2rgb } from './color'
-const FRAGMENT_SHADER = require('./fragment_shader.frag').default
-const VERTEX_SHADER = require('./vertex_shader.vert').default
-
-function isWindow() {
-  return window !== undefined;
-}
-
-function getRequestAnimationFrame() {
-  const fallbackFunction = (fn: any) => { setTimeout(fn, 20); }
-  if (!isWindow()) {
-    return fallbackFunction;
-  }
-  return window.requestAnimationFrame ||
-    (window as any).mozRequestAnimationFrame ||
-    window.webkitRequestAnimationFrame || 
-    (window as any).msRequestAnimationFrame || 
-    fallbackFunction;
-}
-
-const RAF = getRequestAnimationFrame();
+import { getCuadraticFunction } from './lib/math'
+import { Config, Params, UniformPointer } from './models/models';
+import { asArray, getLuma, hsv2rgb } from './lib/color'
+import { defaultParams, TEMP_DATA } from './lib/constants';
+const FRAGMENT_SHADER = require('./shaders/fragment_shader.frag').default
+const VERTEX_SHADER = require('./shaders/vertex_shader.vert').default
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
 let realImage : any = null;
-
 
 interface Log {
   log(msg: string) : void;
@@ -51,7 +32,7 @@ class LogFacade implements Log {
 /* BEGIN WEBGL PART */
 export class RextEditor {
 
-  params: Params = clone(defaults)
+  params: Params = clone(defaultParams)
   gl : WebGLRenderingContext = null;
   program : any = null;
   pointers: UniformPointer = {

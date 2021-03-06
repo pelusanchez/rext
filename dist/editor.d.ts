@@ -1,5 +1,4 @@
-import { Config, UniformPointer } from './models';
-import { Params } from './params';
+import { Config, Params, UniformPointer } from './models/models';
 interface Log {
     log(msg: string): void;
     warn(msg: string): void;
