@@ -7,7 +7,9 @@ interface Log {
 export declare class RextEditor {
     private params;
     private gl;
+    private canvas;
     private program;
+    private realImage;
     private pointers;
     private WIDTH;
     private HEIGHT;
@@ -35,6 +37,7 @@ export declare class RextEditor {
      * Compute the total weight of the kernel in order to normalize it
      */
     kernelNormalization(kernel: number[]): number;
+    blob(type?: string, quality?: number): Promise<Blob>;
     /**
      * render
      * Prepare the environment to edit the image

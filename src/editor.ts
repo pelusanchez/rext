@@ -7,8 +7,6 @@ import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
-let realImage : any = null;
-
 interface Log {
   log(msg: string) : void;
   warn(msg: string) : void;
@@ -36,6 +34,7 @@ export class RextEditor {
   private gl : WebGLRenderingContext = null;
   private canvas : HTMLCanvasElement = null;
   private program : any = null;
+  private realImage : HTMLImageElement = null;
   private pointers: UniformPointer = {
     positionLocation: null,
     positionBuffer: null,
@@ -151,13 +150,13 @@ export class RextEditor {
   load(url: string) {
 
     // Save real image as a copy
-  	realImage = new Image();
-  	realImage.src = url;
-    realImage.onload = () => {
-      if (realImage.width * realImage.height > this.config.resolutionLimit) {
-        var K = realImage.height / realImage.width;
-        realImage.height = Math.floor(Math.sqrt(K * this.config.resolutionLimit));
-        realImage.width = Math.floor(realImage.height / K);
+  	this.realImage = new Image();
+  	this.realImage.src = url;
+    this.realImage.onload = () => {
+      if (this.realImage.width * this.realImage.height > this.config.resolutionLimit) {
+        var K = this.realImage.height / this.realImage.width;
+        this.realImage.height = Math.floor(Math.sqrt(K * this.config.resolutionLimit));
+        this.realImage.width = Math.floor(this.realImage.height / K);
       }
     }
     var img = new Image();
@@ -324,9 +323,9 @@ export class RextEditor {
     return kernel.reduce((a, b) => a + b);
   }
 
-  blob(image: HTMLImageElement, type?: string, quality?: number) : Promise<Blob> {
+  blob(type?: string, quality?: number) : Promise<Blob> {
     return new Promise(async (resolve, reject) => {
-      this.render(image, true);
+      this.render(this.realImage, true);
       setTimeout(() => { // Wait rendering...
         this.canvas.toBlob((blob) => {
           resolve(blob)

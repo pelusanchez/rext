@@ -1,6 +1,6 @@
 import { RextEditor } from './editor'
 import { paramsCallbacks } from './lib/constants';
-test('sumar 1 + 2 es igual a 3', () => {
+test('Callbacks are working', () => {
   const rext = new RextEditor()
   
   expect(rext.getCallbacks(["exposure"])).toStrictEqual([]);
