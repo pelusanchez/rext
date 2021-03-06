@@ -1,22 +1,23 @@
-import { Config, Params, UniformPointer } from './models/models';
+import { Config } from './models/models';
 interface Log {
     log(msg: string): void;
     warn(msg: string): void;
     error(msg: string): void;
 }
 export declare class RextEditor {
-    params: Params;
-    gl: WebGLRenderingContext;
-    program: any;
-    pointers: UniformPointer;
-    WIDTH: number;
-    HEIGHT: number;
-    log: Log;
-    config: Config;
+    private params;
+    private gl;
+    private program;
+    private pointers;
+    private WIDTH;
+    private HEIGHT;
+    private log;
+    private config;
     private uniforms;
-    LIGHT_MATCH: number[];
+    private LIGHT_MATCH;
     constructor(canvas?: HTMLCanvasElement, config?: Config);
     setCanvas(canvas: HTMLCanvasElement): void;
+    runCallback(callbackName: "generateLightning" | "kernel_update" | "updateTempTint"): void;
     updateParam(param: string, value: number): void;
     load(url: string): void;
     setLog(log: Log): void;
@@ -26,7 +27,7 @@ export declare class RextEditor {
      * Lightning generation:
      * Map brightness values depending on Brightness, Contrast... etc
      */
-    generateLightningfunction(): void;
+    generateLightning(): void;
     /**
      * kernelNormalization
      * Compute the total weight of the kernel in order to normalize it

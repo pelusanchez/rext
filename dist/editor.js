@@ -81,6 +81,17 @@ var RextEditor = /** @class */ (function () {
     RextEditor.prototype.setCanvas = function (canvas) {
         this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     };
+    RextEditor.prototype.runCallback = function (callbackName) {
+        switch (callbackName) {
+            case "generateLightning":
+                this.generateLightning();
+            case "kernel_update":
+                this.updateKernel();
+            case "updateTempTint":
+                this.updateTemptint();
+        }
+        this.log.warn("No callback " + callbackName + " exists");
+    };
     RextEditor.prototype.updateParam = function (param, value) {
         var keys = Object.keys(this.params);
         if (keys.includes(param)) {
@@ -200,7 +211,7 @@ var RextEditor = /** @class */ (function () {
      * Lightning generation:
      * Map brightness values depending on Brightness, Contrast... etc
      */
-    RextEditor.prototype.generateLightningfunction = function () {
+    RextEditor.prototype.generateLightning = function () {
         var blacks = this.params.blacks;
         var shadows = this.params.shadows;
         var highlights = this.params.highlights;

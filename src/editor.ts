@@ -32,10 +32,10 @@ class LogFacade implements Log {
 /* BEGIN WEBGL PART */
 export class RextEditor {
 
-  params: Params = clone(defaultParams)
-  gl : WebGLRenderingContext = null;
-  program : any = null;
-  pointers: UniformPointer = {
+  private params: Params = clone(defaultParams)
+  private gl : WebGLRenderingContext = null;
+  private program : any = null;
+  private pointers: UniformPointer = {
     positionLocation: null,
     positionBuffer: null,
     texcoordLocation: null,
@@ -58,10 +58,10 @@ export class RextEditor {
     u_image: null,
   }
 
-  WIDTH: number = 0
-  HEIGHT: number = 0
-  log: Log = new LogFacade()
-  config: Config = {
+  private WIDTH: number = 0
+  private HEIGHT: number = 0
+  private log: Log = new LogFacade()
+  private config: Config = {
     resolutionLimit: 1000000,
     editionResolutionLimit: 1000000,
   }
@@ -75,7 +75,7 @@ export class RextEditor {
     temptint: [1, 1, 1]
   }
 
-  LIGHT_MATCH = (function() {
+  private LIGHT_MATCH = (function() {
   	var _r = [];
   	for (var i = 0; i < 256; i++) {
   		_r[i] = i;
@@ -95,6 +95,18 @@ export class RextEditor {
 
   setCanvas(canvas: HTMLCanvasElement) {
     this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
+  }
+
+  runCallback(callbackName: "generateLightning" | "kernel_update" | "updateTempTint") {
+    switch (callbackName) {
+      case "generateLightning":
+        this.generateLightning();
+      case "kernel_update":
+        this.updateKernel();
+      case "updateTempTint":
+        this.updateTemptint();
+    }
+    this.log.warn(`No callback ${callbackName} exists`)
   }
 
   updateParam(param: string, value: number) {
@@ -197,8 +209,6 @@ export class RextEditor {
   															E, D, C, D, E];
   }
 
-
-
   // Temp and Tint
   updateTemptint() { // Temperature in kelvin
     let T = this.params.temperature
@@ -233,7 +243,7 @@ export class RextEditor {
    * Lightning generation:
    * Map brightness values depending on Brightness, Contrast... etc
    */
-  generateLightningfunction () {
+  generateLightning () {
     var blacks = this.params.blacks;
     var shadows = this.params.shadows;
     var highlights = this.params.highlights;
