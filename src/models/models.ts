@@ -32,7 +32,14 @@ export interface UniformPointer {
   u_image: any;
 }
 
-export interface Params {
+export type KeyValue<V> = { 
+  [key: string]: V
+}
+
+/* Trick for be able to do this.params[paramKey] */
+export type ParamsAbs = KeyValue<number>
+
+export interface Params extends ParamsAbs {
 	hdr: number;
 	exposure: number;
 	temperature: number;

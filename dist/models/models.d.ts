@@ -29,7 +29,11 @@ export interface UniformPointer {
     u_lut: any;
     u_image: any;
 }
-export interface Params {
+export declare type KeyValue<V> = {
+    [key: string]: V;
+};
+export declare type ParamsAbs = KeyValue<number>;
+export interface Params extends ParamsAbs {
     hdr: number;
     exposure: number;
     temperature: number;

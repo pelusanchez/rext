@@ -1,6 +1,6 @@
 import { getCuadraticFunction } from './lib/math';
 import { asArray, getLuma, hsv2rgb } from './lib/color';
-import { defaultParams, TEMP_DATA } from './lib/constants';
+import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index';
 var clone = function (obj) { return JSON.parse(JSON.stringify(obj)); };
 var realImage = null;
@@ -70,7 +70,6 @@ var RextEditor = /** @class */ (function () {
             }
             return _r;
         })();
-        console.log("Constructor called");
         if (canvas) {
             this.setCanvas(canvas);
         }
@@ -91,6 +90,21 @@ var RextEditor = /** @class */ (function () {
                 this.updateTemptint();
         }
         this.log.warn("No callback " + callbackName + " exists");
+    };
+    RextEditor.prototype.updateParams = function (params) {
+        var _this = this;
+        /* Calculate difference */
+        var updateKeys = Object.keys(this.params).filter(function (paramKey) {
+            return _this.params[paramKey] !== params[paramKey];
+        });
+        updateKeys.forEach(function (paramKey) {
+            _this.updateParam(paramKey, params[paramKey]);
+        });
+        var updates = new Set(updateKeys.filter(function (key) { return paramsCallbacks[key] !== null; })
+            .map(function (key) { return paramsCallbacks[key]; })
+            .reduce(function (acc, v) { return acc.concat(v); }, []));
+        /* Update with callbacks */
+        updates.forEach(this.runCallback);
     };
     RextEditor.prototype.updateParam = function (param, value) {
         var keys = Object.keys(this.params);

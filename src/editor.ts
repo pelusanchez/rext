@@ -2,7 +2,7 @@
 import { getCuadraticFunction } from './lib/math'
 import { Config, Params, UniformPointer } from './models/models';
 import { asArray, getLuma, hsv2rgb } from './lib/color'
-import { defaultParams, TEMP_DATA } from './lib/constants';
+import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
@@ -84,7 +84,6 @@ export class RextEditor {
   })();
 
   constructor(canvas?: HTMLCanvasElement, config?: Config) {
-    console.log("Constructor called")
     if (canvas) {
       this.setCanvas(canvas)
     }
@@ -107,6 +106,24 @@ export class RextEditor {
         this.updateTemptint();
     }
     this.log.warn(`No callback ${callbackName} exists`)
+  }
+
+  updateParams(params: Params) {
+    /* Calculate difference */
+    const updateKeys = Object.keys(this.params).filter(paramKey => {
+      return this.params[paramKey] !== params[paramKey]
+    })
+
+    updateKeys.forEach(paramKey => {
+      this.updateParam(paramKey, params[paramKey]);
+    })
+
+    const updates = new Set(updateKeys.filter(key => paramsCallbacks[key] !== null)
+      .map(key => paramsCallbacks[key])
+      .reduce((acc, v) => acc.concat(v), []));
+
+    /* Update with callbacks */
+    updates.forEach(this.runCallback)
   }
 
   updateParam(param: string, value: number) {

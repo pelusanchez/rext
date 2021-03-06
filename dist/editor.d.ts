@@ -1,4 +1,4 @@
-import { Config } from './models/models';
+import { Config, Params } from './models/models';
 interface Log {
     log(msg: string): void;
     warn(msg: string): void;
@@ -18,6 +18,7 @@ export declare class RextEditor {
     constructor(canvas?: HTMLCanvasElement, config?: Config);
     setCanvas(canvas: HTMLCanvasElement): void;
     runCallback(callbackName: "generateLightning" | "kernel_update" | "updateTempTint"): void;
+    updateParams(params: Params): void;
     updateParam(param: string, value: number): void;
     load(url: string): void;
     setLog(log: Log): void;

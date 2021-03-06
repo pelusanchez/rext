@@ -24,6 +24,19 @@ export var defaultParams = {
     darkColor: 0,
     darkSat: 1
 };
+export var paramsCallbacks = {
+    contrast: ["generateLightning"],
+    whites: ["generateLightning"],
+    highlights: ["generateLightning"],
+    shadows: ["generateLightning"],
+    blacks: ["generateLightning"],
+    radiance: ["generateLightning", "kernel_update"],
+    hdr: ["kernel_update"],
+    temperature: ["updateTemptint"],
+    tint: ["updateTemptint"],
+    sharpen: ["kernel_update"],
+    sharpen_radius: ["kernel_update"],
+};
 export var TEMP_DATA = [
     [0.6167426069865002, 0.017657981710823077],
     [0.5838624982041293, 0.06447754787874993],

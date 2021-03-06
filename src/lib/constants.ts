@@ -1,7 +1,7 @@
 /**
  * Constants
  */
-import { Params } from "../models/models";
+import { Params, KeyValue } from "../models/models";
 
 export const defaultParams : Params = {
   hdr: 0,
@@ -29,6 +29,21 @@ export const defaultParams : Params = {
   darkColor: 0,
   darkSat: 1
 };
+
+export const paramsCallbacks : KeyValue<string[]> = {
+  contrast: ["generateLightning"],
+  whites: ["generateLightning"],
+  highlights: ["generateLightning"],
+  shadows: ["generateLightning"],
+  blacks: ["generateLightning"],
+  radiance: ["generateLightning", "kernel_update"],
+  hdr: ["kernel_update"],
+  temperature: ["updateTemptint"],
+  tint: ["updateTemptint"],
+  sharpen: ["kernel_update"],
+  sharpen_radius: ["kernel_update"],
+}
+  
 
 export const TEMP_DATA = [
   [0.6167426069865002, 0.017657981710823077],
