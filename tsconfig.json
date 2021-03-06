@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "outDir": "./build/",
+    "outDir": "./lib/",
     "noImplicitAny": true,
     "module": "es6",
     "target": "es5",
+    "declaration": true,
     "allowJs": true
   },
   "include": ["src/**/*"],

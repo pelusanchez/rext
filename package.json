@@ -1,6 +1,7 @@
 {
   "name": "rext-image-editor",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "types": "./build/index.d.ts",
   "description": "REXT is a client side image editor that uses GPU.",
   "main": "build/index.js",
   "scripts": {
@@ -37,3 +38,4 @@
     "webpack-cli": "^4.5.0"
   }
 }
+

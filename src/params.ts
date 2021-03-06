@@ -25,7 +25,6 @@ export interface Params {
 	darkSat: number;
 }
 
-
 export const defaults : Params = {
   hdr: 0,
   exposure: 0,

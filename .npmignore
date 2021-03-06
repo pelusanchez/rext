@@ -1,0 +1,7 @@
+.git
+.gitignore
+examples/
+package.json
+package-lock.json
+tsconfig.json
+webpack.config.js
