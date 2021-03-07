@@ -2,29 +2,89 @@
 <html>
   <head>
     <script languaje="javascript" src="../build/index.js"></script>
-    <script languaje="javascript">
-      let rext = null;
+    <style type="text/css">
+    #playground {
+      display: flex;
+      min-height: 400px;
+    }
 
-      function loadImage() {
-        rext = new RextEditor.RextEditor(
-        document.querySelector("#frame"),
-        {
-          maxResolution: 10000000,
-          maxEditionResolution: 10000000 / 4,
-        });
-        document.querySelector("#file").addEventListener("change", (e) => {
-          let imageReader = new FileReader();
-          const target = e.target;
-          if (target.files[0]) {
-            rext.load(URL.createObjectURL(target.files[0]))
-          }
-        })
+    #rext-params {
+      width: 100%;
+      min-height: 400px;
+      min-width: 300px;
+    }
+    </style>
+    <script languaje="javascript">
+      const rext = new RextEditor.RextEditor();
+      const defaultParams = {
+        hdr: 0,
+        exposure: 0,
+        temperature: 0,
+        tint: 0,
+        brightness: 0,
+        saturation: 0,
+        contrast: 0,
+        sharpen: 0,
+        masking: 0,
+        sharpen_radius: 0,
+        radiance: 0,
+        highlights: 0,
+        shadows: 0,
+        whites: 0,
+        blacks: 0,
+        dehaze: 0,
+        bAndW: 0,
+        atmosferic_light: 0,
+        lightFill: 0,
+        lightColor: 0,
+        lightSat: 1,
+        darkFill: 0,
+        darkColor: 0,
+        darkSat: 1
+      };
+
+      function onFileUpload(e) {
+        const imageReader = new FileReader();
+        const target = e.target;
+        if (target.files[0]) {
+          rext.load(URL.createObjectURL(target.files[0]))
+        }
       }
-      window.addEventListener('load', loadImage)
+
+      function updateParams() {
+        const element = document.querySelector("#rext-params");
+        
+        try {
+          // Check if is valid:  
+          const newParams = JSON.parse(element.value)
+          rext.updateParams(newParams) 
+        } catch (err) {
+          console.error(err)
+          // Ignore error...
+        }
+        
+      }
+
+      window.addEventListener('load', () => {
+        rext.setCanvas(document.querySelector("#frame"));
+        document.querySelector("#file").addEventListener("change", onFileUpload)
+        document.querySelector("#rext-params").value = JSON.stringify(defaultParams, null, 2)
+        document.querySelector("#rext-params").addEventListener("change", updateParams)
+      })
+
+      
     </script>
   </head>
   <body>
-    <input type="file" id="file"/>
-    <canvas width="1200" height="800" id="frame"></canvas>
+    <div>
+      <input type="file" id="file"/>
+    </div>
+    <div id="playground">
+      <canvas width="1200" height="800" style="width: 800px; height: auto;" id="frame"></canvas>
+      <div class=>
+        <textarea id="rext-params"></textarea>
+        <button onClick="updateParams">Apply</button>
+      </div>
+    </div>
   </body>
 </html>

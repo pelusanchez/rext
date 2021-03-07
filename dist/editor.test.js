@@ -5,7 +5,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
 };
 import { RextEditor } from './editor';
 import { paramsCallbacks } from './lib/constants';
-test('sumar 1 + 2 es igual a 3', function () {
+test('Callbacks are working', function () {
     var rext = new RextEditor();
     expect(rext.getCallbacks(["exposure"])).toStrictEqual([]);
     expect(rext.getCallbacks(["radiance"])).toStrictEqual(paramsCallbacks["radiance"]);
