@@ -2,13 +2,7 @@ export const clamp = (a: number, b: number, c: number) => {
   return (a < b) ? b : (a > c) ? c : a;
 }
 
-function resTreatment(arr: number[]) {
-	var l = arr.length;
-	for (var i = 0; i < l; i++) {
-		arr[i] = Math.round(arr[i] * 1000) / 1000;
-	}
-	return arr;
-};
+export const resTreatment = (arr: number[]) => arr.map(v => Math.round(v * 1000) / 1000);
 
 export const getCuadraticFunction = (a: number, b: number, c: number, d: number, aa = 0, bb = 0.33, cc = 0.66, dd = 1) => {
 	const aaS = Math.pow(aa, 2);

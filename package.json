@@ -5,6 +5,8 @@
   "types": "dist/index.d.ts",
   "description": "REXT is a client side image editor that uses GPU.",
   "scripts": {
+    "build-st": "node ./buildShaders.js && tsc",
+    "generate-st": "node ./buildShaders.js && webpack",
     "build": "jest && tsc",
     "generate": "jest && webpack",
     "test": "jest"

@@ -10,6 +10,7 @@ export declare class RextEditor {
     private canvas;
     private program;
     private realImage;
+    private currentImage;
     private pointers;
     private WIDTH;
     private HEIGHT;
@@ -17,12 +18,14 @@ export declare class RextEditor {
     private config;
     private uniforms;
     private LIGHT_MATCH;
-    constructor(canvas?: HTMLCanvasElement, config?: Config);
-    setCanvas(canvas: HTMLCanvasElement): void;
+    constructor(canvas: HTMLCanvasElement, config?: Config);
     runCallback(callbackName: string): void;
     updateParams(params: Params): void;
     getCallbacks(updatedParams: string[]): string[];
     private updateParam;
+    resize(width: number, height: number): void;
+    rotate(radians: number): void;
+    private loadImage;
     load(url: string): void;
     setLog(log: Log): void;
     updateKernel(): void;

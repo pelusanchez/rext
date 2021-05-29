@@ -1,14 +1,7 @@
 export var clamp = function (a, b, c) {
     return (a < b) ? b : (a > c) ? c : a;
 };
-function resTreatment(arr) {
-    var l = arr.length;
-    for (var i = 0; i < l; i++) {
-        arr[i] = Math.round(arr[i] * 1000) / 1000;
-    }
-    return arr;
-}
-;
+export var resTreatment = function (arr) { return arr.map(function (v) { return Math.round(v * 1000) / 1000; }); };
 export var getCuadraticFunction = function (a, b, c, d, aa, bb, cc, dd) {
     if (aa === void 0) { aa = 0; }
     if (bb === void 0) { bb = 0.33; }
