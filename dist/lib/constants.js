@@ -22,8 +22,12 @@ export var defaultParams = {
     lightSat: 1,
     darkFill: 0,
     darkColor: 0,
-    darkSat: 1
+    darkSat: 1,
+    rotation: 0, /* Radians */
 };
+/**
+ * Callbacks needed to be recalculated when changing parameters
+ */
 export var paramsCallbacks = {
     contrast: ["generateLightning"],
     whites: ["generateLightning"],
@@ -37,6 +41,9 @@ export var paramsCallbacks = {
     sharpen: ["kernel_update"],
     sharpen_radius: ["kernel_update"],
 };
+/**
+ * Temperature map
+ */
 export var TEMP_DATA = [
     [0.6167426069865002, 0.017657981710823077],
     [0.5838624982041293, 0.06447754787874993],

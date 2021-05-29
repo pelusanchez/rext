@@ -1,6 +1,6 @@
 
 import { getCuadraticFunction } from './lib/math'
-import { Config, Params, UniformPointer } from './models/models';
+import { Config, Params } from './models/models';
 import { asArray, getLuma, hsv2rgb } from './lib/color'
 import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
@@ -31,11 +31,12 @@ class LogFacade implements Log {
 export class RextEditor {
 
   private params: Params = clone(defaultParams)
-  private gl : WebGLRenderingContext = null;
-  private canvas : HTMLCanvasElement = null;
+  private gl : WebGLRenderingContext;
+  private canvas : HTMLCanvasElement;
   private program : any = null;
-  private realImage : HTMLImageElement = null;
-  private pointers: UniformPointer = {
+  private realImage : HTMLImageElement | null = null;
+  private currentImage : HTMLImageElement | null = null;
+  private pointers : any = {
     positionLocation: null,
     positionBuffer: null,
     texcoordLocation: null,
@@ -56,6 +57,7 @@ export class RextEditor {
     u_hdr: null,
     u_lut: null,
     u_image: null,
+    u_rotation: null,
   }
 
   private WIDTH: number = 0
@@ -83,24 +85,20 @@ export class RextEditor {
   	return _r;
   })();
 
-  constructor(canvas?: HTMLCanvasElement, config?: Config) {
-    if (canvas) {
-      this.setCanvas(canvas)
-    }
+  constructor(canvas: HTMLCanvasElement, config?: Config) {
+    this.canvas = canvas
+    this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
     if (config) {
       this.config = config
     }
   }
 
-  setCanvas(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
-  }
-
   runCallback(callbackName: string) {
     switch (callbackName) {
+      // @ts-ignore
       case "generateLightning":
         this.generateLightning();
+      // @ts-ignore
       case "kernel_update":
         this.updateKernel();
       case "updateTemptint":
@@ -147,55 +145,44 @@ export class RextEditor {
     }
   }
 
-  load(url: string) {
-
-    // Save real image as a copy
-  	this.realImage = new Image();
-  	this.realImage.src = url;
-    this.realImage.onload = () => {
-      if (this.realImage.width * this.realImage.height > this.config.resolutionLimit) {
-        var K = this.realImage.height / this.realImage.width;
-        this.realImage.height = Math.floor(Math.sqrt(K * this.config.resolutionLimit));
-        this.realImage.width = Math.floor(this.realImage.height / K);
-      }
+  resize(width: number, height: number) {
+    if (this.realImage == null) {
+      this.log.warn('Resize called without image');
+      return;
     }
-    var img = new Image();
-    // Some JPG files are not accepted by graphic card,
-    // the following code are to convert it to png image
-    img.onerror = () => {
+    const image = new Image();
+    image.width = width
+    image.height = height
+    this.loadImage(image);
+  	image.src = this.realImage.src;
+  }
+
+  rotate(radians: number) {
+
+    this.params.rotation = radians;
+
+  }
+
+  private loadImage(image: HTMLImageElement) {
+    image.onload = () => {
+      if (this.currentImage == null) {
+        this.log.warn('Load Image called without image');
+        return;
+      }
+      this.render(this.currentImage);
+    }
+    image.onerror = () => {
       this.log.error("Error al cargar la imagen.")
     }
+    this.currentImage = image
+  }
 
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-
-        if (img.height * img.width > this.config.editionResolutionLimit) {
-          const _H = Math.sqrt(this.config.editionResolutionLimit * img.height / img.width);
-          const _W = img.width / img.height * _H;
-          canvas.width = _W;
-          canvas.height = _H;
-        } else {
-          canvas.width = img.width;
-          canvas.height = img.height;
-        }
-
-        const resizeImageCanvas = canvas.getContext("2d");
-        resizeImageCanvas.imageSmoothingEnabled = true;
-        resizeImageCanvas.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        const _img = new Image();
-        _img.src = canvas.toDataURL("image/png");
-        _img.onload = () => {
-          this.render(_img);
-        }
-        
-      } catch(err) {
-        this.log.error(err);
-      }
-    }
-    
-    img.src = url;
+  load(url: string) {
+    this.log.log("Version 1")
+    // Save real image as a copy
+  	this.realImage = new Image();
+    this.loadImage(this.realImage)
+  	this.realImage.src = url;
   }
 
   setLog(log: Log) {
@@ -284,16 +271,6 @@ export class RextEditor {
   			0,  0.33, 0.66, 1);
 
 
-  	// Radiance part
-  	if (radiance != 0) {
-  		var f_radiance = getCuadraticFunction(
-  			0,
-  			0.33 - radiance * 0.11,
-  			0.66 + radiance * 0.11,
-  			1,
-  			0, 0.33, 0.66, 1);
-  	}
-
   	for (var i = 0; i < 256; i++) {
   		var pixel_value = i / 256;
 
@@ -305,7 +282,14 @@ export class RextEditor {
    		if (pixel_value > 1) { pixel_value = 1; }
   		if (pixel_value < 0) { pixel_value = 0; }
   		
-  		if (f_radiance) {
+  	  // Radiance part
+  		if (radiance != 0) {
+        const f_radiance = getCuadraticFunction(
+          0,
+          0.33 - radiance * 0.11,
+          0.66 + radiance * 0.11,
+          1,
+          0, 0.33, 0.66, 1);
   			pixel_value = f_radiance(pixel_value);
   		}
   		pixel_value = f(pixel_value);
@@ -324,13 +308,19 @@ export class RextEditor {
   }
 
   blob(type?: string, quality?: number) : Promise<Blob> {
-    return new Promise(async (resolve, reject) => {
-      this.render(this.realImage, true);
-      setTimeout(() => { // Wait rendering...
-        this.canvas.toBlob((blob) => {
-          resolve(blob)
-        }, type || "image/jpeg", quality || 0.95);
-      }, 100);
+    return new Promise((resolve, reject) => {
+      if (this.realImage === null) {
+        this.log.warn('Called to blob without loaded image');
+        return reject();
+      }
+      this.render(this.realImage);
+      this.canvas.toBlob((blob) => {
+        if (blob === null) {
+          this.log.error('Unable to generate the blob file');
+          return reject();
+        }
+        resolve(blob)
+      }, type || "image/jpeg", quality || 0.95);
     })
   }
 
@@ -370,7 +360,7 @@ export class RextEditor {
     this.gl.canvas.width = this.WIDTH;
     this.gl.canvas.height = this.HEIGHT;
 
-    console.log("[IMAGE] width = " + this.WIDTH + ", height = " + this.HEIGHT);
+    this.log.log("[IMAGE] width = " + this.WIDTH + ", height = " + this.HEIGHT);
 
     this.setRectangle(0, 0, this.WIDTH, this.HEIGHT);
 
@@ -413,6 +403,7 @@ export class RextEditor {
     this.pointers.u_temptint            = this.gl.getUniformLocation(this.program, "u_temptint[0]");
     this.pointers.u_bAndW               = this.gl.getUniformLocation(this.program, "u_bAndW");
     this.pointers.u_hdr                 = this.gl.getUniformLocation(this.program, "u_hdr");
+    this.pointers.u_rotation            = this.gl.getUniformLocation(this.program, "u_rotation");
 
     this.pointers.u_lut = this.gl.getUniformLocation(this.program, "u_lut");
     // Upload the LUT (contrast, brightness...)
@@ -424,7 +415,6 @@ export class RextEditor {
     this.gl.clearColor(0, 0, 0, 0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
-    
     if (!preventRenderImage) { 
       this.update();
     }
@@ -474,6 +464,7 @@ export class RextEditor {
       .concat(asArray(hsv2rgb({ x: this.params.darkColor * 360, y: this.params.darkSat, z: this.params.darkFill })))); // vec3 x3
     this.gl.uniform1f(this.pointers.u_bAndW, this.params.bAndW);
     this.gl.uniform1f(this.pointers.u_hdr, this.params.hdr);
+    this.gl.uniform1f(this.pointers.u_rotation, this.params.rotation );
 
     // Show image
     this.gl.uniform1i(this.pointers.u_image, 0); // TEXTURE 0
@@ -513,8 +504,6 @@ function createShader(gl: any, type: any, source: any) {
   if (success) {
     return shader;
   }
-  
-  console.log(gl.getShaderInfoLog(shader));
   gl.deleteShader(shader);
 }
 
@@ -529,8 +518,7 @@ function createProgram(gl: any, vertexShader: any, fragmentShader: any) {
   if (success) {
     return program;
   }
-  
-  console.log(gl.getProgramInfoLog(program));
+
   gl.deleteProgram(program);
 }
 

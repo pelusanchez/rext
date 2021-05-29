@@ -1,39 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 import { getCuadraticFunction } from './lib/math';
 import { asArray, getLuma, hsv2rgb } from './lib/color';
 import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
@@ -57,10 +21,9 @@ var LogFacade = /** @class */ (function () {
 var RextEditor = /** @class */ (function () {
     function RextEditor(canvas, config) {
         this.params = clone(defaultParams);
-        this.gl = null;
-        this.canvas = null;
         this.program = null;
         this.realImage = null;
+        this.currentImage = null;
         this.pointers = {
             positionLocation: null,
             positionBuffer: null,
@@ -82,6 +45,7 @@ var RextEditor = /** @class */ (function () {
             u_hdr: null,
             u_lut: null,
             u_image: null,
+            u_rotation: null,
         };
         this.WIDTH = 0;
         this.HEIGHT = 0;
@@ -107,21 +71,18 @@ var RextEditor = /** @class */ (function () {
             }
             return _r;
         })();
-        if (canvas) {
-            this.setCanvas(canvas);
-        }
+        this.canvas = canvas;
+        this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
         if (config) {
             this.config = config;
         }
     }
-    RextEditor.prototype.setCanvas = function (canvas) {
-        this.canvas = canvas;
-        this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-    };
     RextEditor.prototype.runCallback = function (callbackName) {
         switch (callbackName) {
+            // @ts-ignore
             case "generateLightning":
                 this.generateLightning();
+            // @ts-ignore
             case "kernel_update":
                 this.updateKernel();
             case "updateTemptint":
@@ -161,51 +122,40 @@ var RextEditor = /** @class */ (function () {
             this.log.error("Param " + param + " does not exists");
         }
     };
-    RextEditor.prototype.load = function (url) {
+    RextEditor.prototype.resize = function (width, height) {
+        if (this.realImage == null) {
+            this.log.warn('Resize called without image');
+            return;
+        }
+        var image = new Image();
+        image.width = width;
+        image.height = height;
+        this.loadImage(image);
+        image.src = this.realImage.src;
+    };
+    RextEditor.prototype.rotate = function (radians) {
+        this.params.rotation = radians;
+    };
+    RextEditor.prototype.loadImage = function (image) {
         var _this = this;
-        // Save real image as a copy
-        this.realImage = new Image();
-        this.realImage.src = url;
-        this.realImage.onload = function () {
-            if (_this.realImage.width * _this.realImage.height > _this.config.resolutionLimit) {
-                var K = _this.realImage.height / _this.realImage.width;
-                _this.realImage.height = Math.floor(Math.sqrt(K * _this.config.resolutionLimit));
-                _this.realImage.width = Math.floor(_this.realImage.height / K);
+        image.onload = function () {
+            if (_this.currentImage == null) {
+                _this.log.warn('Load Image called without image');
+                return;
             }
+            _this.render(_this.currentImage);
         };
-        var img = new Image();
-        // Some JPG files are not accepted by graphic card,
-        // the following code are to convert it to png image
-        img.onerror = function () {
+        image.onerror = function () {
             _this.log.error("Error al cargar la imagen.");
         };
-        img.onload = function () {
-            try {
-                var canvas = document.createElement("canvas");
-                if (img.height * img.width > _this.config.editionResolutionLimit) {
-                    var _H = Math.sqrt(_this.config.editionResolutionLimit * img.height / img.width);
-                    var _W = img.width / img.height * _H;
-                    canvas.width = _W;
-                    canvas.height = _H;
-                }
-                else {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                }
-                var resizeImageCanvas = canvas.getContext("2d");
-                resizeImageCanvas.imageSmoothingEnabled = true;
-                resizeImageCanvas.drawImage(img, 0, 0, canvas.width, canvas.height);
-                var _img_1 = new Image();
-                _img_1.src = canvas.toDataURL("image/png");
-                _img_1.onload = function () {
-                    _this.render(_img_1);
-                };
-            }
-            catch (err) {
-                _this.log.error(err);
-            }
-        };
-        img.src = url;
+        this.currentImage = image;
+    };
+    RextEditor.prototype.load = function (url) {
+        this.log.log("Version 1");
+        // Save real image as a copy
+        this.realImage = new Image();
+        this.loadImage(this.realImage);
+        this.realImage.src = url;
     };
     RextEditor.prototype.setLog = function (log) {
         this.log = log;
@@ -276,10 +226,6 @@ var RextEditor = /** @class */ (function () {
         var whites = this.params.whites;
         var radiance = this.params.radiance;
         var f = getCuadraticFunction(blacks, shadows + 0.33, highlights + 0.66, whites + 1, 0, 0.33, 0.66, 1);
-        // Radiance part
-        if (radiance != 0) {
-            var f_radiance = getCuadraticFunction(0, 0.33 - radiance * 0.11, 0.66 + radiance * 0.11, 1, 0, 0.33, 0.66, 1);
-        }
         for (var i = 0; i < 256; i++) {
             var pixel_value = i / 256;
             // Brightness
@@ -296,7 +242,9 @@ var RextEditor = /** @class */ (function () {
             if (pixel_value < 0) {
                 pixel_value = 0;
             }
-            if (f_radiance) {
+            // Radiance part
+            if (radiance != 0) {
+                var f_radiance = getCuadraticFunction(0, 0.33 - radiance * 0.11, 0.66 + radiance * 0.11, 1, 0, 0.33, 0.66, 1);
                 pixel_value = f_radiance(pixel_value);
             }
             pixel_value = f(pixel_value);
@@ -318,18 +266,20 @@ var RextEditor = /** @class */ (function () {
     };
     RextEditor.prototype.blob = function (type, quality) {
         var _this = this;
-        return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                this.render(this.realImage, true);
-                setTimeout(function () {
-                    _this.canvas.toBlob(function (blob) {
-                        resolve(blob);
-                    }, type || "image/jpeg", quality || 0.95);
-                }, 100);
-                return [2 /*return*/];
-            });
-        }); });
+        return new Promise(function (resolve, reject) {
+            if (_this.realImage === null) {
+                _this.log.warn('Called to blob without loaded image');
+                return reject();
+            }
+            _this.render(_this.realImage);
+            _this.canvas.toBlob(function (blob) {
+                if (blob === null) {
+                    _this.log.error('Unable to generate the blob file');
+                    return reject();
+                }
+                resolve(blob);
+            }, type || "image/jpeg", quality || 0.95);
+        });
     };
     /**
      * render
@@ -360,7 +310,7 @@ var RextEditor = /** @class */ (function () {
         this.HEIGHT = image.height;
         this.gl.canvas.width = this.WIDTH;
         this.gl.canvas.height = this.HEIGHT;
-        console.log("[IMAGE] width = " + this.WIDTH + ", height = " + this.HEIGHT);
+        this.log.log("[IMAGE] width = " + this.WIDTH + ", height = " + this.HEIGHT);
         this.setRectangle(0, 0, this.WIDTH, this.HEIGHT);
         // Create the rectangle 
         this.pointers.texcoordBuffer = this.gl.createBuffer();
@@ -398,6 +348,7 @@ var RextEditor = /** @class */ (function () {
         this.pointers.u_temptint = this.gl.getUniformLocation(this.program, "u_temptint[0]");
         this.pointers.u_bAndW = this.gl.getUniformLocation(this.program, "u_bAndW");
         this.pointers.u_hdr = this.gl.getUniformLocation(this.program, "u_hdr");
+        this.pointers.u_rotation = this.gl.getUniformLocation(this.program, "u_rotation");
         this.pointers.u_lut = this.gl.getUniformLocation(this.program, "u_lut");
         // Upload the LUT (contrast, brightness...)
         this.gl.activeTexture(this.gl.TEXTURE1);
@@ -441,6 +392,7 @@ var RextEditor = /** @class */ (function () {
             .concat(asArray(hsv2rgb({ x: this.params.darkColor * 360, y: this.params.darkSat, z: this.params.darkFill })))); // vec3 x3
         this.gl.uniform1f(this.pointers.u_bAndW, this.params.bAndW);
         this.gl.uniform1f(this.pointers.u_hdr, this.params.hdr);
+        this.gl.uniform1f(this.pointers.u_rotation, this.params.rotation);
         // Show image
         this.gl.uniform1i(this.pointers.u_image, 0); // TEXTURE 0
         this.gl.uniform1i(this.pointers.u_lut, 1); // TEXTURE 1
@@ -474,7 +426,6 @@ function createShader(gl, type, source) {
     if (success) {
         return shader;
     }
-    console.log(gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
 }
 function createProgram(gl, vertexShader, fragmentShader) {
@@ -486,7 +437,6 @@ function createProgram(gl, vertexShader, fragmentShader) {
     if (success) {
         return program;
     }
-    console.log(gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
 }
 function createTexture(gl) {

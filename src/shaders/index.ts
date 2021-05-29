@@ -143,9 +143,29 @@ const VERTEX_SHADER = `attribute vec2 a_position;
 attribute vec2 a_texCoord;
 uniform vec2 u_resolution;
 varying vec2 v_texCoord;
+
+uniform float u_rotation;
+
 void main() {
+
   vec2 dist = a_position / u_resolution;
-  gl_Position = vec4((dist * 2.0 - 1.0) * vec2(1, -1), 0, 1);
+
+
+  /*dist = vec2(
+     dist.y * u_rotation.x - dist.x * u_rotation.y, 
+     dist.y * u_rotation.y + dist.x * u_rotation.x) + vec2(0.5, -0.5);*/
+
+    float pi4 = 0.02;
+    float aspect = 0.5;
+
+  vec4 pos = vec4((dist * 2.0 - 1.0) * vec2(1, -1), 0, 1);
+
+  pos.x = (pos.x) * 0.7071067811865476 - (pos.y) * 0.7071067811865476;
+  pos.y = (pos.x) * 0.7071067811865476 + (pos.y) * 0.7071067811865476;
+  pos.z = 0.0;
+  pos.w = 1.0;
+  gl_Position = pos;
   v_texCoord = a_texCoord;
-}`
+}
+`
 export { FRAGMENT_SHADER, VERTEX_SHADER }
