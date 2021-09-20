@@ -11,10 +11,15 @@ export interface Config {
 
 export type KeyValue<V> = { 
   [key: string]: V
+};
+
+export interface f2Number {
+	x: number;
+	y: number;
 }
 
 /* Trick for be able to do this.params[paramKey] */
-export type ParamsAbs = KeyValue<number>
+export type ParamsAbs = KeyValue<number | f2Number>
 
 export interface Params extends ParamsAbs {
 	hdr: number;
@@ -41,6 +46,5 @@ export interface Params extends ParamsAbs {
 	darkFill: number;
 	darkColor: number;
 	darkSat: number;
-
-  rotation: number;
+  rotation: f2Number;
 }

@@ -1,31 +1,13 @@
 
 import { getCuadraticFunction } from './lib/math'
-import { Config, Params } from './models/models';
+import { Config, f2Number, Params } from './models/models';
 import { asArray, getLuma, hsv2rgb } from './lib/color'
 import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
+import { Log } from './log/log';
+import { LogFacade } from './log/LogFacade';
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
-
-interface Log {
-  log(msg: string) : void;
-  warn(msg: string) : void;
-  error(msg: string) : void;
-}
-
-class LogFacade implements Log {
-  log(msg: string) {
-    console.log(msg);
-  }
-  warn(msg: string) {
-    console.warn(msg);
-  }
-
-  error(msg: string) {
-    console.error(msg);
-  }
-
-}
 
 /* BEGIN WEBGL PART */
 export class RextEditor {
@@ -63,6 +45,7 @@ export class RextEditor {
   private WIDTH: number = 0
   private HEIGHT: number = 0
   log: Log = new LogFacade()
+  
   private config: Config = {
     resolutionLimit: 1000000,
     editionResolutionLimit: 1000000,
@@ -85,12 +68,18 @@ export class RextEditor {
   	return _r;
   })();
 
-  constructor(canvas: HTMLCanvasElement, config?: Config) {
-    this.canvas = canvas
-    this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
+  constructor(canvas?: HTMLCanvasElement, config?: Config) {
+    if (canvas) {
+      this.setCanvas(canvas);
+    }
     if (config) {
       this.config = config
     }
+  }
+
+  public setCanvas(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
   }
 
   runCallback(callbackName: string) {
@@ -135,7 +124,7 @@ export class RextEditor {
     return Array.from(callbacks)
   }
 
-  private updateParam(param: string, value: number) {
+  private updateParam(param: string, value: number | f2Number) {
     const keys = Object.keys(this.params)
     if (keys.includes(param)) {
       // @ts-ignore
@@ -145,7 +134,7 @@ export class RextEditor {
     }
   }
 
-  resize(width: number, height: number) {
+  public resize(width: number, height: number) {
     if (this.realImage == null) {
       this.log.warn('Resize called without image');
       return;
@@ -157,7 +146,7 @@ export class RextEditor {
   	image.src = this.realImage.src;
   }
 
-  rotate(radians: number) {
+  public rotate(radians: f2Number) {
 
     this.params.rotation = radians;
 
@@ -464,7 +453,7 @@ export class RextEditor {
       .concat(asArray(hsv2rgb({ x: this.params.darkColor * 360, y: this.params.darkSat, z: this.params.darkFill })))); // vec3 x3
     this.gl.uniform1f(this.pointers.u_bAndW, this.params.bAndW);
     this.gl.uniform1f(this.pointers.u_hdr, this.params.hdr);
-    this.gl.uniform1f(this.pointers.u_rotation, this.params.rotation );
+    this.gl.uniform2f(this.pointers.u_rotation, this.params.rotation.x, this.params.rotation.y );
 
     // Show image
     this.gl.uniform1i(this.pointers.u_image, 0); // TEXTURE 0

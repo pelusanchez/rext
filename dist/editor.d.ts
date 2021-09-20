@@ -1,9 +1,5 @@
-import { Config, Params } from './models/models';
-interface Log {
-    log(msg: string): void;
-    warn(msg: string): void;
-    error(msg: string): void;
-}
+import { Config, f2Number, Params } from './models/models';
+import { Log } from './log/log';
 export declare class RextEditor {
     private params;
     private gl;
@@ -18,13 +14,14 @@ export declare class RextEditor {
     private config;
     private uniforms;
     private LIGHT_MATCH;
-    constructor(canvas: HTMLCanvasElement, config?: Config);
+    constructor(canvas?: HTMLCanvasElement, config?: Config);
+    setCanvas(canvas: HTMLCanvasElement): void;
     runCallback(callbackName: string): void;
     updateParams(params: Params): void;
     getCallbacks(updatedParams: string[]): string[];
     private updateParam;
     resize(width: number, height: number): void;
-    rotate(radians: number): void;
+    rotate(radians: f2Number): void;
     private loadImage;
     load(url: string): void;
     setLog(log: Log): void;
@@ -52,4 +49,3 @@ export declare class RextEditor {
     update(): void;
     private setRectangle;
 }
-export {};

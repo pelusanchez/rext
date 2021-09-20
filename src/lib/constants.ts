@@ -29,7 +29,10 @@ export const defaultParams : Params = {
   darkColor: 0,
   darkSat: 1,
 
-  rotation: 0, /* Radians */
+  rotation: { 
+    x: 0.707, /* Radians */
+    y: 0.707, /* Radians */
+  }
 };
 
 /**
