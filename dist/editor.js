@@ -2,21 +2,8 @@ import { getCuadraticFunction } from './lib/math';
 import { asArray, getLuma, hsv2rgb } from './lib/color';
 import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index';
+import { LogFacade } from './log/LogFacade';
 var clone = function (obj) { return JSON.parse(JSON.stringify(obj)); };
-var LogFacade = /** @class */ (function () {
-    function LogFacade() {
-    }
-    LogFacade.prototype.log = function (msg) {
-        console.log(msg);
-    };
-    LogFacade.prototype.warn = function (msg) {
-        console.warn(msg);
-    };
-    LogFacade.prototype.error = function (msg) {
-        console.error(msg);
-    };
-    return LogFacade;
-}());
 /* BEGIN WEBGL PART */
 var RextEditor = /** @class */ (function () {
     function RextEditor(canvas, config) {
@@ -46,6 +33,8 @@ var RextEditor = /** @class */ (function () {
             u_lut: null,
             u_image: null,
             u_rotation: null,
+            u_scale: null,
+            u_translate: null,
         };
         this.WIDTH = 0;
         this.HEIGHT = 0;
@@ -71,12 +60,17 @@ var RextEditor = /** @class */ (function () {
             }
             return _r;
         })();
-        this.canvas = canvas;
-        this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        if (canvas) {
+            this.setCanvas(canvas);
+        }
         if (config) {
             this.config = config;
         }
     }
+    RextEditor.prototype.setCanvas = function (canvas) {
+        this.canvas = canvas;
+        this.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    };
     RextEditor.prototype.runCallback = function (callbackName) {
         switch (callbackName) {
             // @ts-ignore
@@ -133,8 +127,17 @@ var RextEditor = /** @class */ (function () {
         this.loadImage(image);
         image.src = this.realImage.src;
     };
-    RextEditor.prototype.rotate = function (radians) {
-        this.params.rotation = radians;
+    RextEditor.prototype.getWidth = function () {
+        return this.WIDTH;
+    };
+    RextEditor.prototype.getHeight = function () {
+        return this.HEIGHT;
+    };
+    RextEditor.prototype.get2dRotation = function () {
+        return {
+            x: Math.sin(this.params.rotation),
+            y: Math.cos(this.params.rotation)
+        };
     };
     RextEditor.prototype.loadImage = function (image) {
         var _this = this;
@@ -151,7 +154,7 @@ var RextEditor = /** @class */ (function () {
         this.currentImage = image;
     };
     RextEditor.prototype.load = function (url) {
-        this.log.log("Version 1");
+        this.log.log("Version 1.2.3");
         // Save real image as a copy
         this.realImage = new Image();
         this.loadImage(this.realImage);
@@ -349,6 +352,8 @@ var RextEditor = /** @class */ (function () {
         this.pointers.u_bAndW = this.gl.getUniformLocation(this.program, "u_bAndW");
         this.pointers.u_hdr = this.gl.getUniformLocation(this.program, "u_hdr");
         this.pointers.u_rotation = this.gl.getUniformLocation(this.program, "u_rotation");
+        this.pointers.u_scale = this.gl.getUniformLocation(this.program, "u_scale");
+        this.pointers.u_translate = this.gl.getUniformLocation(this.program, "u_translate");
         this.pointers.u_lut = this.gl.getUniformLocation(this.program, "u_lut");
         // Upload the LUT (contrast, brightness...)
         this.gl.activeTexture(this.gl.TEXTURE1);
@@ -362,25 +367,20 @@ var RextEditor = /** @class */ (function () {
     };
     RextEditor.prototype.update = function () {
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.ALPHA, 256, 1, 0, this.gl.ALPHA, this.gl.UNSIGNED_BYTE, new Uint8Array(this.LIGHT_MATCH));
-        // Tell it to use our this.program (pair of shaders)
         this.gl.useProgram(this.program);
-        // Turn on the position attribute
         this.gl.enableVertexAttribArray(this.pointers.positionLocation);
-        // Bind the position buffer.
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pointers.positionBuffer);
         this.gl.vertexAttribPointer(this.pointers.positionLocation, 2, this.gl.FLOAT, false, 0, 0);
-        // Turn on the teccord attribute
         this.gl.enableVertexAttribArray(this.pointers.texcoordLocation);
-        // Bind the position buffer.
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pointers.texcoordBuffer);
         this.gl.vertexAttribPointer(this.pointers.texcoordLocation, 2, this.gl.FLOAT, false, 0, 0);
         // set the resolution
-        this.gl.uniform2f(this.pointers.resolutionLocation, this.WIDTH, this.HEIGHT); //this.gl.canvas.width, this.gl.canvas.height);
+        this.gl.uniform2f(this.pointers.resolutionLocation, this.WIDTH, this.HEIGHT);
         // set the size of the image
         this.gl.uniform2f(this.pointers.textureSizeLocation, this.WIDTH, this.HEIGHT);
-        // Set the contrast
+        // Set the parameters values
         this.gl.uniform1f(this.pointers.u_brightness, this.params.brightness);
-        //this.gl.uniform1f(this.pointers.u_contrast, this.params.contrast);
+        this.gl.uniform1f(this.pointers.u_contrast, this.params.contrast);
         this.gl.uniform1f(this.pointers.u_exposure, this.params.exposure);
         this.gl.uniform1f(this.pointers.u_contrast, this.params.contrast);
         this.gl.uniform1f(this.pointers.u_saturation, this.params.saturation);
@@ -392,7 +392,10 @@ var RextEditor = /** @class */ (function () {
             .concat(asArray(hsv2rgb({ x: this.params.darkColor * 360, y: this.params.darkSat, z: this.params.darkFill })))); // vec3 x3
         this.gl.uniform1f(this.pointers.u_bAndW, this.params.bAndW);
         this.gl.uniform1f(this.pointers.u_hdr, this.params.hdr);
-        this.gl.uniform1f(this.pointers.u_rotation, this.params.rotation);
+        var rotation = this.get2dRotation();
+        this.gl.uniform2f(this.pointers.u_rotation, rotation.x, rotation.y);
+        this.gl.uniform2f(this.pointers.u_scale, this.params.scale.x, this.params.scale.y);
+        this.gl.uniform2f(this.pointers.u_translate, this.params.translate.x, this.params.translate.y);
         // Show image
         this.gl.uniform1i(this.pointers.u_image, 0); // TEXTURE 0
         this.gl.uniform1i(this.pointers.u_lut, 1); // TEXTURE 1

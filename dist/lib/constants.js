@@ -23,7 +23,15 @@ export var defaultParams = {
     darkFill: 0,
     darkColor: 0,
     darkSat: 1,
-    rotation: 0, /* Radians */
+    rotation: 0,
+    scale: {
+        x: 1,
+        y: 1,
+    },
+    translate: {
+        x: 0,
+        y: 0,
+    },
 };
 /**
  * Callbacks needed to be recalculated when changing parameters
