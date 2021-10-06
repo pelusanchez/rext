@@ -143,17 +143,19 @@ const VERTEX_SHADER = `attribute vec2 a_position;
 attribute vec2 a_texCoord;
 uniform vec2 u_resolution;
 varying vec2 v_texCoord;
-
 uniform vec2 u_rotation;
+uniform vec2 u_scale;
+uniform vec2 u_translate;
 
 void main() {
 
-  vec2 posRotated = vec2(
-    a_position.x * u_rotation.y + a_position.y * u_rotation.x,
-    a_position.y * u_rotation.y - a_position.x * u_rotation.x);
-
-  vec2 dist = posRotated / u_resolution;
-
+  vec2 scaled = a_position * u_scale;
+  vec2 center = u_resolution / 2.0;
+  vec2 pos_rotated = vec2(
+    (scaled.x - center.x) * u_rotation.y + (scaled.y - center.x) * u_rotation.x,
+    (scaled.y - center.y) * u_rotation.y - (scaled.x - center.y) * u_rotation.x);
+  
+  vec2 dist = (pos_rotated + center) / u_resolution + u_translate;
   vec4 pos = vec4((dist * 2.0 - 1.0) * vec2(1, -1), 0, 1);
   
   pos.z = 0.0;

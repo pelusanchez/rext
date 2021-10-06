@@ -21,7 +21,11 @@ export declare class RextEditor {
     getCallbacks(updatedParams: string[]): string[];
     private updateParam;
     resize(width: number, height: number): void;
-    rotate(radians: f2Number): void;
+    getWidth(): number;
+    getHeight(): number;
+    scale(scale: f2Number): void;
+    rotate(radians: number): void;
+    private get2dRotation;
     private loadImage;
     load(url: string): void;
     setLog(log: Log): void;

@@ -40,6 +40,8 @@ export class RextEditor {
     u_lut: null,
     u_image: null,
     u_rotation: null,
+    u_scale: null,
+    u_translate: null,
   }
 
   private WIDTH: number = 0
@@ -146,10 +148,27 @@ export class RextEditor {
   	image.src = this.realImage.src;
   }
 
-  public rotate(radians: f2Number) {
+  public getWidth() {
+    return this.realImage.width;
+  }
+  
+  public getHeight() {
+    return this.realImage.height;
+  }
+  
+  public scale(scale: f2Number) {
+    this.updateParam('scale', scale);
+  }
 
-    this.params.rotation = radians;
+  public rotate(radians: number) {
+    this.updateParam('rotation', radians);
+  }
 
+  private get2dRotation(): f2Number {
+    return {
+      x: Math.sin(this.params.rotation),
+      y: Math.cos(this.params.rotation)
+    };
   }
 
   private loadImage(image: HTMLImageElement) {
@@ -393,6 +412,8 @@ export class RextEditor {
     this.pointers.u_bAndW               = this.gl.getUniformLocation(this.program, "u_bAndW");
     this.pointers.u_hdr                 = this.gl.getUniformLocation(this.program, "u_hdr");
     this.pointers.u_rotation            = this.gl.getUniformLocation(this.program, "u_rotation");
+    this.pointers.u_scale               = this.gl.getUniformLocation(this.program, "u_scale");
+    this.pointers.u_translate           = this.gl.getUniformLocation(this.program, "u_translate");
 
     this.pointers.u_lut = this.gl.getUniformLocation(this.program, "u_lut");
     // Upload the LUT (contrast, brightness...)
@@ -414,34 +435,25 @@ export class RextEditor {
     this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.ALPHA, 256, 1, 0, this.gl.ALPHA, this.gl.UNSIGNED_BYTE,
         new Uint8Array(this.LIGHT_MATCH));
 
-    // Tell it to use our this.program (pair of shaders)
     this.gl.useProgram(this.program);
-
-    // Turn on the position attribute
     this.gl.enableVertexAttribArray(this.pointers.positionLocation);
-
-    // Bind the position buffer.
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pointers.positionBuffer);
 
     this.gl.vertexAttribPointer(this.pointers.positionLocation, 2, this.gl.FLOAT, false, 0, 0);
-
-    // Turn on the teccord attribute
     this.gl.enableVertexAttribArray(this.pointers.texcoordLocation);
-
-    // Bind the position buffer.
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pointers.texcoordBuffer);
 
     this.gl.vertexAttribPointer(this.pointers.texcoordLocation, 2, this.gl.FLOAT, false, 0, 0);
 
     // set the resolution
-    this.gl.uniform2f(this.pointers.resolutionLocation, this.WIDTH, this.HEIGHT); //this.gl.canvas.width, this.gl.canvas.height);
+    this.gl.uniform2f(this.pointers.resolutionLocation, this.WIDTH, this.HEIGHT);
 
     // set the size of the image
     this.gl.uniform2f(this.pointers.textureSizeLocation, this.WIDTH, this.HEIGHT);
 
-    // Set the contrast
+    // Set the parameters values
     this.gl.uniform1f(this.pointers.u_brightness, this.params.brightness);
-    //this.gl.uniform1f(this.pointers.u_contrast, this.params.contrast);
+    this.gl.uniform1f(this.pointers.u_contrast, this.params.contrast);
     this.gl.uniform1f(this.pointers.u_exposure, this.params.exposure);
     this.gl.uniform1f(this.pointers.u_contrast, this.params.contrast);
     this.gl.uniform1f(this.pointers.u_saturation, this.params.saturation);
@@ -453,7 +465,11 @@ export class RextEditor {
       .concat(asArray(hsv2rgb({ x: this.params.darkColor * 360, y: this.params.darkSat, z: this.params.darkFill })))); // vec3 x3
     this.gl.uniform1f(this.pointers.u_bAndW, this.params.bAndW);
     this.gl.uniform1f(this.pointers.u_hdr, this.params.hdr);
-    this.gl.uniform2f(this.pointers.u_rotation, this.params.rotation.x, this.params.rotation.y );
+
+    const rotation = this.get2dRotation();
+    this.gl.uniform2f(this.pointers.u_rotation, rotation.x, rotation.y );
+    this.gl.uniform2f(this.pointers.u_scale, this.params.scale.x, this.params.scale.y );
+    this.gl.uniform2f(this.pointers.u_translate, this.params.translate.x, this.params.translate.y );
 
     // Show image
     this.gl.uniform1i(this.pointers.u_image, 0); // TEXTURE 0
