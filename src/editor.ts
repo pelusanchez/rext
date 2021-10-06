@@ -178,7 +178,7 @@ export class RextEditor {
   }
 
   load(url: string) {
-    this.log.log("Version 1")
+    this.log.log("Version 1.2.2")
     // Save real image as a copy
   	this.realImage = new Image();
     this.loadImage(this.realImage)
