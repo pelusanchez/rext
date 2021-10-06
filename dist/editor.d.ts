@@ -1,4 +1,4 @@
-import { Config, f2Number, Params } from './models/models';
+import { Config, Params } from './models/models';
 import { Log } from './log/log';
 export declare class RextEditor {
     private params;
@@ -23,8 +23,6 @@ export declare class RextEditor {
     resize(width: number, height: number): void;
     getWidth(): number;
     getHeight(): number;
-    scale(scale: f2Number): void;
-    rotate(radians: number): void;
     private get2dRotation;
     private loadImage;
     load(url: string): void;

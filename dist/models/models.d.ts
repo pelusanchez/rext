@@ -42,4 +42,5 @@ export interface Params extends ParamsAbs {
     darkSat: number;
     rotation: number;
     scale: f2Number;
+    translate: f2Number;
 }

@@ -149,19 +149,11 @@ export class RextEditor {
   }
 
   public getWidth() {
-    return this.realImage.width;
+    return this.WIDTH;
   }
   
   public getHeight() {
-    return this.realImage.height;
-  }
-  
-  public scale(scale: f2Number) {
-    this.updateParam('scale', scale);
-  }
-
-  public rotate(radians: number) {
-    this.updateParam('rotation', radians);
+    return this.HEIGHT;
   }
 
   private get2dRotation(): f2Number {

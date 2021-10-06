@@ -31,13 +31,18 @@ Sample: [https://rext.es](https://rext.es)
 * Dehaze.
 * Atmospheric light: Used for dehaze.
 
+### Transformations
+* Rotation.
+* Scale. 
+* Translate.
+
 ## HTML Vanilla example:
 	
 ```[html]
 <!DOCTYPE html>
 <html>
   <head>
-    <script languaje="javascript" src="/build/index.js"></script>
+    <script languaje="javascript" src="../build/index.js"></script>
     <style type="text/css">
     #playground {
       display: flex;
@@ -76,7 +81,16 @@ Sample: [https://rext.es](https://rext.es)
         lightSat: 1,
         darkFill: 0,
         darkColor: 0,
-        darkSat: 1
+        darkSat: 1,
+        rotation: 0.0,
+        scale: {
+          x: 1,
+          y: 1,
+        },
+        translate: {
+          x: 0,
+          y: 0,
+        }
       };
 
       function onFileUpload(e) {
@@ -124,7 +138,6 @@ Sample: [https://rext.es](https://rext.es)
     </div>
   </body>
 </html>
-
 ```
 
 ## Typescript Example:
@@ -171,3 +184,6 @@ rext.updateParams(nextParams : Params)
 | darkFill | number |
 | darkColor | number |
 | darkSat | number |
+| rotation | number (Radians) |
+| scale | 2d number { x: number; y: number }|
+| translate | 2d number { x: number; y: number }|
