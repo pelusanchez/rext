@@ -1,4 +1,6 @@
 # Rext Image Editor
+[![npm version](https://badge.fury.io/js/rext-image-editor.svg)](//npmjs.com/package/rext-image-editor)
+
 
 Rext is a web based image editor. Uses webGL for image processing. **Only client side**.
 Sample: [https://rext.es](https://rext.es)
