@@ -8,7 +8,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
@@ -27,5 +27,13 @@ module.exports = {
     filename: 'index.js',
     library: "RextEditor",
     path: path.resolve(__dirname, 'build'),
+  },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'build'),
+    },
+    compress: false,
+    port: 9000,
+    hot: true,
   },
 };

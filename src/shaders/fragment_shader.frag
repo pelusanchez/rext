@@ -57,7 +57,7 @@ void main() {
   vec3 rgb_pix = mix(center, (colorSum.rgb / u_kernelWeight), u_masking);
 	
 	/**
-	 * RGB to saturation/value conversion, in order to maintains hue constant 
+	 * RGB to saturation/value conversion, in order to keep hue constant 
 	 * sv_pixel = (saturation, value)
 	 */
   float _max = max(rgb_pix.r, max(rgb_pix.g, rgb_pix.b));

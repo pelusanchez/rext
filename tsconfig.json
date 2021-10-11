@@ -8,6 +8,7 @@
     "allowJs": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "typeRoots": ["types"], 
+  "include": ["src/**/*", "types"],
   "exclude": ["node_modules/**/*", "**/*.spec.ts"]
 }
