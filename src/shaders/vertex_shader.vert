@@ -4,15 +4,15 @@ uniform vec2 u_resolution;
 varying vec2 v_texCoord;
 uniform vec2 u_rotation;
 uniform vec2 u_scale;
-uniform vec2 u_translate;
+uniform vec2 u_translate; 
 
 void main() {
 
   vec2 scaled = a_position * u_scale;
   vec2 center = u_resolution / 2.0;
   vec2 pos_rotated = vec2(
-    (scaled.x - center.x) * u_rotation.y + (scaled.y - center.x) * u_rotation.x,
-    (scaled.y - center.y) * u_rotation.y - (scaled.x - center.y) * u_rotation.x);
+    (scaled.x - center.x) * u_rotation.y + (scaled.y - center.y) * u_rotation.x,
+    (scaled.y - center.y) * u_rotation.y - (scaled.x - center.x) * u_rotation.x);
   
   vec2 dist = (pos_rotated + center) / u_resolution;
   dist.x = dist.x + u_translate.x;
