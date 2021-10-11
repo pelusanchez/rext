@@ -40,6 +40,7 @@ export class RextEditor {
     u_lut: null,
     u_image: null,
     u_rotation: null,
+    u_rotation_center: null,
     u_scale: null,
     u_translate: null,
   }
@@ -155,14 +156,30 @@ export class RextEditor {
   public getHeight() {
     return this.HEIGHT;
   }
-
-  private get2dRotation(): f2Number {
-    return {
-      x: Math.sin(this.params.rotation),
-      y: Math.cos(this.params.rotation)
-    };
+  
+  public rotateFrom(x: number, y: number) {
+    this.params.rotation_center.x = x;
+    this.params.rotation_center.y = y;
+  }
+  
+  public rotateFromCenter(x: number, y: number) {
+    this.params.rotation_center.x = 0;
+    this.params.rotation_center.y = 0;
   }
 
+  private get2dRotation(): number[] {
+    return [
+      Math.sin(this.params.rotation),
+      Math.cos(this.params.rotation)
+    ];
+  }
+
+  private get2dRotationCenter(): number[] {
+    const x = (this.params.rotation_center.x + 1) * this.WIDTH / 2.0;
+    const y = (this.params.rotation_center.y + 1) * this.HEIGHT / 2.0;
+    return [x, y];
+  }
+  
   private loadImage(image: HTMLImageElement) {
     image.onload = () => {
       if (this.currentImage == null) {
@@ -178,7 +195,7 @@ export class RextEditor {
   }
 
   load(url: string) {
-    this.log.log("Version 1.2.3")
+    this.log.log("Version 1.2.4")
     // Save real image as a copy
   	this.realImage = new Image();
     this.loadImage(this.realImage)
@@ -331,8 +348,6 @@ export class RextEditor {
    * context: webgl context. Default: __window.gl
    * SET_FULL_RES: no resize the image to edit. Default: false (resize the image)
    */
-
-
   private render(image: HTMLImageElement, preventRenderImage?: boolean) {
     // Load GSLS programs
     var VERTEX_SHADER_CODE = createShader(this.gl, this.gl.VERTEX_SHADER, VERTEX_SHADER);
@@ -404,6 +419,7 @@ export class RextEditor {
     this.pointers.u_bAndW               = this.gl.getUniformLocation(this.program, "u_bAndW");
     this.pointers.u_hdr                 = this.gl.getUniformLocation(this.program, "u_hdr");
     this.pointers.u_rotation            = this.gl.getUniformLocation(this.program, "u_rotation");
+    this.pointers.u_rotation_center     = this.gl.getUniformLocation(this.program, "u_rotation_center");
     this.pointers.u_scale               = this.gl.getUniformLocation(this.program, "u_scale");
     this.pointers.u_translate           = this.gl.getUniformLocation(this.program, "u_translate");
 
@@ -457,9 +473,8 @@ export class RextEditor {
       .concat(asArray(hsv2rgb({ x: this.params.darkColor * 360, y: this.params.darkSat, z: this.params.darkFill })))); // vec3 x3
     this.gl.uniform1f(this.pointers.u_bAndW, this.params.bAndW);
     this.gl.uniform1f(this.pointers.u_hdr, this.params.hdr);
-
-    const rotation = this.get2dRotation();
-    this.gl.uniform2f(this.pointers.u_rotation, rotation.x, rotation.y );
+    this.gl.uniform2fv(this.pointers.u_rotation, this.get2dRotation() );
+    this.gl.uniform2fv(this.pointers.u_rotation_center, this.get2dRotationCenter() );
     this.gl.uniform2f(this.pointers.u_scale, this.params.scale.x, this.params.scale.y );
     this.gl.uniform2f(this.pointers.u_translate, this.params.translate.x, this.params.translate.y );
 

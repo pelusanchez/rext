@@ -29,6 +29,10 @@ export const defaultParams : Params = {
   darkColor: 0,
   darkSat: 1,
   rotation: 0,
+  rotation_center: {
+    x: 0,
+    y: 0,
+  },
   scale: {
     x: 1,
     y: 1,
