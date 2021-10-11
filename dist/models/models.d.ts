@@ -41,6 +41,7 @@ export interface Params extends ParamsAbs {
     darkColor: number;
     darkSat: number;
     rotation: number;
+    rotation_center: f2Number;
     scale: f2Number;
     translate: f2Number;
 }

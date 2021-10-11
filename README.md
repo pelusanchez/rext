@@ -32,9 +32,10 @@ Sample: [https://rext.es](https://rext.es)
 * Atmospheric light: Used for dehaze.
 
 ### Transformations
-* Rotation.
-* Scale. 
-* Translate.
+* Rotation: Radians.
+* Rotation origin: Set the origin of the rotation. The image center by default. Range: [-1, 1]. Center at (0,0)
+* Scale. Multiplier number. 
+* Translate. Range: [-1, 1].
 
 ## HTML Vanilla example:
 	
@@ -42,7 +43,7 @@ Sample: [https://rext.es](https://rext.es)
 <!DOCTYPE html>
 <html>
   <head>
-    <script languaje="javascript" src="../build/index.js"></script>
+    <script languaje="javascript" src="./index.js"></script>
     <style type="text/css">
     #playground {
       display: flex;
@@ -83,6 +84,10 @@ Sample: [https://rext.es](https://rext.es)
         darkColor: 0,
         darkSat: 1,
         rotation: 0.0,
+        rotation_center: {
+          x: 0,
+          y: 0,
+        },
         scale: {
           x: 1,
           y: 1,
@@ -119,9 +124,10 @@ Sample: [https://rext.es](https://rext.es)
         rext.setCanvas(document.querySelector("#frame"));
         document.querySelector("#file").addEventListener("change", onFileUpload)
         document.querySelector("#rext-params").value = JSON.stringify(defaultParams, null, 2)
-        document.querySelector("#rext-params").addEventListener("change", updateParams)
-      })
+        document.querySelector("#rext-params").addEventListener("change", updateParams);
 
+        rext.load("/test.jpg");
+      });
       
     </script>
   </head>
@@ -130,8 +136,8 @@ Sample: [https://rext.es](https://rext.es)
       <input type="file" id="file"/>
     </div>
     <div id="playground">
-      <canvas width="1200" height="800" style="width: 800px; height: auto;" id="frame"></canvas>
-      <div class=>
+      <canvas width="640" height="468" style="width: 640px; height: 468px;" id="frame"></canvas>
+      <div>
         <textarea id="rext-params"></textarea>
         <button onClick="updateParams">Apply</button>
       </div>
@@ -185,5 +191,6 @@ rext.updateParams(nextParams : Params)
 | darkColor | number |
 | darkSat | number |
 | rotation | number (Radians) |
+| rotation_center | 2d number { x: number; y: number } |
 | scale | 2d number { x: number; y: number }|
 | translate | 2d number { x: number; y: number }|

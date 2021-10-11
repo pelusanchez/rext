@@ -23,7 +23,10 @@ export declare class RextEditor {
     resize(width: number, height: number): void;
     getWidth(): number;
     getHeight(): number;
+    rotateFrom(x: number, y: number): void;
+    rotateFromCenter(x: number, y: number): void;
     private get2dRotation;
+    private get2dRotationCenter;
     private loadImage;
     load(url: string): void;
     setLog(log: Log): void;
