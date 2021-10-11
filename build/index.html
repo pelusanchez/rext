@@ -78,7 +78,9 @@
         rext.setCanvas(document.querySelector("#frame"));
         document.querySelector("#file").addEventListener("change", onFileUpload)
         document.querySelector("#rext-params").value = JSON.stringify(defaultParams, null, 2)
-        document.querySelector("#rext-params").addEventListener("change", updateParams)
+        document.querySelector("#rext-params").addEventListener("change", updateParams);
+
+        rext.load("/test.jpg");
       });
       
     </script>
@@ -88,7 +90,7 @@
       <input type="file" id="file"/>
     </div>
     <div id="playground">
-      <canvas width="1200" height="800" style="width: 800px; height: auto;" id="frame"></canvas>
+      <canvas width="640" height="468" style="width: 640px; height: 468px;" id="frame"></canvas>
       <div>
         <textarea id="rext-params"></textarea>
         <button onClick="updateParams">Apply</button>
