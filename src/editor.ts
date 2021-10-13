@@ -7,6 +7,7 @@ import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
 import { Log } from './log/log';
 import { LogFacade } from './log/LogFacade';
 import { computeKernel, sumArray, tempTint } from './lib/image-transforms';
+import { createProgram, createShader, createTexture } from './shaders';
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
@@ -184,13 +185,13 @@ export class RextEditor {
   private loadImage(image: HTMLImageElement) {
     image.onload = () => {
       if (this.currentImage == null) {
-        this.log.warn('Load Image called without image');
+        this.log.warn('Load Image called without image.');
         return;
       }
-      this.render(this.currentImage);
+      this.create(this.currentImage);
     }
     image.onerror = () => {
-      this.log.error("Error al cargar la imagen.")
+      this.log.error("Error while loading the image.")
     }
     this.currentImage = image
   }
@@ -264,7 +265,7 @@ export class RextEditor {
         this.log.warn('Called to blob without loaded image');
         return reject();
       }
-      this.render(this.realImage);
+      this.create(this.realImage);
       this.canvas.toBlob((blob) => {
         if (blob === null) {
           this.log.error('Unable to generate the blob file');
@@ -276,18 +277,17 @@ export class RextEditor {
   }
 
   /**
-   * render
+   * create
    * Prepare the environment to edit the image
    * image: Image element to edit (Image object)
    * context: webgl context. Default: __window.gl
    * SET_FULL_RES: no resize the image to edit. Default: false (resize the image)
    */
-  private render(image: HTMLImageElement, preventRenderImage?: boolean) {
+  private create(image: HTMLImageElement, preventRenderImage?: boolean) {
     // Load GSLS programs
-    var VERTEX_SHADER_CODE = createShader(this.gl, this.gl.VERTEX_SHADER, VERTEX_SHADER);
-  	var FRAGMENT_SHADER_CODE = createShader(this.gl, this.gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
-
     try {
+      const VERTEX_SHADER_CODE = createShader(this.gl, this.gl.VERTEX_SHADER, VERTEX_SHADER);
+      const FRAGMENT_SHADER_CODE = createShader(this.gl, this.gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
     	this.program = createProgram(this.gl, VERTEX_SHADER_CODE, FRAGMENT_SHADER_CODE);
     } catch(err) {
     	return this.log.error(err);
@@ -327,8 +327,8 @@ export class RextEditor {
 
   	this.gl.activeTexture(this.gl.TEXTURE0);
 
-    const originalImageTexture = createTexture(this.gl);
     // Upload the image into the texture.
+    createTexture(this.gl);
     try {
       this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
     } catch(err) {
@@ -438,46 +438,4 @@ export class RextEditor {
     ]), this.gl.STATIC_DRAW);
   }
 
-  // END WEBGL PART==================================================
-}
-
-function createShader(gl: any, type: any, source: any) {
-  var shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-  if (success) {
-    return shader;
-  }
-  gl.deleteShader(shader);
-}
-
-
-function createProgram(gl: any, vertexShader: any, fragmentShader: any) {
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-
-  var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-  if (success) {
-    return program;
-  }
-
-  gl.deleteProgram(program);
-}
-
-
-function createTexture(gl: any) {
-  var texture = gl.createTexture();
-
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-  return texture;
 }
