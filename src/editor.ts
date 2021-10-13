@@ -6,6 +6,7 @@ import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
 import { Log } from './log/log';
 import { LogFacade } from './log/LogFacade';
+import { computeKernel, tempTint } from './lib/image-transforms';
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
@@ -92,7 +93,7 @@ export class RextEditor {
         this.generateLightning();
       // @ts-ignore
       case "kernel_update":
-        this.updateKernel();
+        this.uniforms.kernel = computeKernel(this.params);
       case "updateTemptint":
         this.updateTemptint();
     }
@@ -206,68 +207,9 @@ export class RextEditor {
     this.log = log;
   }
 
-  updateKernel() {
-  	// 3x3 kernel
-  	var sharpness = - this.params.sharpen;
-  	var radius = this.params.sharpen_radius;
-    var radiance = this.params.radiance;
-    var hdr = this.params.hdr;
-  	
-  	if (radiance != 0) {
-  		sharpness -= 0.5 * radiance;
-  		radius += 0.5 *  radiance;
-  	}
-
-    if (hdr != 0) {
-      sharpness -= 0.5 * hdr;
-      radius += 0.5 * hdr;
-    }
-
-  	var A = sharpness * Math.exp(- Math.pow(1    / radius, 2)); 
-  	var B = sharpness * Math.exp(- Math.pow(1.41 / radius, 2));
-  	var C = sharpness * Math.exp(- Math.pow(2    / radius, 2));
-  	var D = sharpness * Math.exp(- Math.pow(2.24 / radius, 2));
-  	var E = sharpness * Math.exp(- Math.pow(2.83 / radius, 2));
-  	var X = 1;
-  	if (sharpness < 0) {
-  		X += 4 * Math.abs(E) + 8 * Math.abs(D) + 4 * Math.abs(C) + 4 * Math.abs(B) + 4 * Math.abs(A);
-  	}
-
-  	this.uniforms.kernel = [E, D, C, D, E,
-  															D, B, A, B, D,
-  															C, A, X, A, C,
-  															D, B, A, B, D,
-  															E, D, C, D, E];
-  }
-
   // Temp and Tint
   updateTemptint() { // Temperature in kelvin
-    let T = this.params.temperature
-    let tint = this.params.tint
-    let R, G, B;
-
-    if (T < 0) {
-      R = 1;
-      const i = TEMP_DATA[Math.floor((T + 1) * 100)]; // Tab values, algorithm is hard
-      G = i[0];
-      B = i[1];
-    } else {
-      R = 0.0438785 / (Math.pow(T + 0.150127, 1.23675)) + 0.543991;
-      G = 0.0305003 / (Math.pow(T + 0.163976, 1.23965)) + 0.69136;
-      B = 1;
-    }
-
-    if (tint == -1) { // HACK
-      tint = -0.99;
-    }
-    G += tint;
-
-    // Luma correction
-    var curr_luma = getLuma({x: R, y: G, z: B});
-    var mult_K = 1 / curr_luma;
-
-    // TODO
-    this.uniforms.temptint = [R * mult_K, G * mult_K, B * mult_K];
+    this.uniforms.temptint = tempTint(this.params);
   }
 
   /**
@@ -314,14 +256,6 @@ export class RextEditor {
   		if (pixel_value < 0) { pixel_value = 0; }
   		this.LIGHT_MATCH[i] =  pixel_value * 255; 
   	}
-  }
-
-  /**
-   * kernelNormalization
-   * Compute the total weight of the kernel in order to normalize it
-   */
-  kernelNormalization(kernel: number[]) : number {
-    return kernel.reduce((a, b) => a + b);
   }
 
   blob(type?: string, quality?: number) : Promise<Blob> {
@@ -481,7 +415,6 @@ export class RextEditor {
     // Show image
     this.gl.uniform1i(this.pointers.u_image, 0); // TEXTURE 0
     this.gl.uniform1i(this.pointers.u_lut, 1); // TEXTURE 1
-
     
     // set the kernel and it's weight
     this.gl.uniform1fv(this.pointers.kernelLocation, this.uniforms.kernel);
