@@ -195,15 +195,15 @@ export class RextEditor {
   }
 
   load(url: string) {
-    this.log.log("Version 1.2.4")
+    this.log.log("Version 1.2.6")
     // Save real image as a copy
   	this.realImage = new Image();
-    this.loadImage(this.realImage)
+    this.loadImage(this.realImage);
   	this.realImage.src = url;
   }
 
   setLog(log: Log) {
-    this.log = log
+    this.log = log;
   }
 
   updateKernel() {
