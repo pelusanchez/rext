@@ -1,4 +1,5 @@
 import { Params } from "../models/models";
+import { getLuma } from "./color";
 import { TEMP_DATA } from "./constants";
 
 /** 
@@ -71,4 +72,4 @@ export const tempTint = (params: Pick<Params, 'temperature' | 'tint'>) => {
  * kernelNormalization
  * Compute the total weight of the kernel in order to normalize it
  */
-export const kernelSum = (kernel: number[]) : number => kernel.reduce((a, b) => a + b);
+export const sumArray = (kernel: number[]) : number => kernel.reduce((a, b) => a + b);

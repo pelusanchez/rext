@@ -1,12 +1,12 @@
 
 import { getCuadraticFunction } from './lib/math'
 import { Config, f2Number, Params } from './models/models';
-import { asArray, getLuma, hsv2rgb } from './lib/color'
+import { asArray, hsv2rgb } from './lib/color'
 import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
 import { Log } from './log/log';
 import { LogFacade } from './log/LogFacade';
-import { computeKernel, tempTint } from './lib/image-transforms';
+import { computeKernel, sumArray, tempTint } from './lib/image-transforms';
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
 
@@ -418,7 +418,7 @@ export class RextEditor {
     
     // set the kernel and it's weight
     this.gl.uniform1fv(this.pointers.kernelLocation, this.uniforms.kernel);
-    this.gl.uniform1f(this.pointers.kernelWeightLocation, this.kernelNormalization(this.uniforms.kernel));
+    this.gl.uniform1f(this.pointers.kernelWeightLocation, sumArray(this.uniforms.kernel));
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }
