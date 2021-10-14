@@ -222,7 +222,7 @@ export class RextEditor {
     this.log.log("[IMAGE] width = " + this.WIDTH + ", height = " + this.HEIGHT);
     this.log.log("[CANVAS] width = " + this.gl.canvas.width + ", height = " + this.gl.canvas.height);
 
-    this.setRectangle(this.context.createBuffer("ARRAY_BUFFER"), 0, 0, this.WIDTH, this.HEIGHT);
+    this.setRectangle(this.context.createBuffer("ARRAY_BUFFER"), 0.0, 0.0, this.WIDTH, this.HEIGHT);
     this.setRectangle(this.context.createBuffer("TEXCOORD_BUFFER"), 0, 0, 1.0, 1.0);
 
   	this.gl.activeTexture(this.gl.TEXTURE0);
@@ -261,11 +261,10 @@ export class RextEditor {
     this.gl.useProgram(this.program);
     this.gl.enableVertexAttribArray(this.context.getAttribute("a_position"));
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.context.getBuffer("ARRAY_BUFFER"));
-
     this.gl.vertexAttribPointer(this.context.getAttribute("a_position"), 2, this.gl.FLOAT, false, 0, 0);
     this.gl.enableVertexAttribArray(this.context.getAttribute("a_texCoord"));
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.context.getBuffer("TEXCOORD_BUFFER"));
 
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.context.getBuffer("TEXCOORD_BUFFER"));
     this.gl.vertexAttribPointer(this.context.getAttribute("a_texCoord"), 2, this.gl.FLOAT, false, 0, 0);
 
     // set the resolution
@@ -290,7 +289,6 @@ export class RextEditor {
     this.gl.uniform2f(this.context.getUniform("u_translate"), this.params.translate.x, this.params.translate.y );
 
     // Show image
-    this.gl.uniform1i(this.context.getUniform("u_image"), 0); // TEXTURE 0
     this.gl.uniform1i(this.context.getUniform("u_lut"), 1); // TEXTURE 1
     
     // set the kernel and it's weight
@@ -300,6 +298,14 @@ export class RextEditor {
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }
 
+  public crop(x1: number, y1: number, x2: number, y2: number) {
+    this.gl.uniform2f(this.context.getUniform("u_resolution"), (x2 - x1), (y2 - y1));
+    this.gl.uniform2f(this.context.getUniform("u_translate"), -(x1 / this.WIDTH), - (y1 / this.HEIGHT) );
+    (this.gl.canvas as HTMLCanvasElement).style.width = (x2 - x1) + "px";
+    (this.gl.canvas as HTMLCanvasElement).style.height = (y2 - y1) + "px";
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+  }
+  
   private setRectangle(buffer: WebGLBuffer, x: number, y: number, width: number, height: number) {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
     var x1 = x;
