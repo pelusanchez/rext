@@ -41,6 +41,12 @@ export const defaultParams : Params = {
     x: 0,
     y: 0,
   },
+  crop: {
+    x: 0,
+    y: 0,
+    z: 0,
+    w: 0,
+  },
 };
 
 /**
