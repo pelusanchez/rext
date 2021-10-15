@@ -58,5 +58,5 @@ export interface Params extends ParamsAbs {
 	rotation_center: f2Number;
 	scale: f2Number;
 	translate: f2Number;
-	crop: f4Number;
+	size: f2Number;
 }

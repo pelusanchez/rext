@@ -268,7 +268,11 @@ export class RextEditor {
     this.gl.vertexAttribPointer(this.context.getAttribute("a_texCoord"), 2, this.gl.FLOAT, false, 0, 0);
 
     // set the resolution
-    this.gl.uniform2f(this.context.getUniform("u_resolution"), this.WIDTH, this.HEIGHT);
+    const x2 = this.WIDTH * this.params.size.x;
+    const y2 = this.HEIGHT * this.params.size.y;
+    const x1 = this.params.translate.x * this.WIDTH;
+    const y1 = this.params.translate.y * this.HEIGHT;
+    this.gl.uniform2f(this.context.getUniform("u_resolution"), x2 - x1, y2 - y1);
     this.gl.uniform2f(this.context.getUniform("u_textureSize"), this.WIDTH, this.HEIGHT);
     this.gl.uniform1f(this.context.getUniform("u_brightness"), this.params.brightness);
     this.gl.uniform1f(this.context.getUniform("u_contrast"), this.params.contrast);
@@ -295,14 +299,13 @@ export class RextEditor {
     this.gl.uniform1fv(this.context.getUniform("u_kernel[0]"), this.uniforms.kernel);
     this.gl.uniform1f(this.context.getUniform("u_kernelWeight"), sumArray(this.uniforms.kernel));
 
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-  }
+    /* Adjust canvas size */
 
-  public crop(x1: number, y1: number, x2: number, y2: number) {
-    this.gl.uniform2f(this.context.getUniform("u_resolution"), (x2 - x1), (y2 - y1));
-    this.gl.uniform2f(this.context.getUniform("u_translate"), -(x1 / this.WIDTH), - (y1 / this.HEIGHT) );
-    (this.gl.canvas as HTMLCanvasElement).style.width = (x2 - x1) + "px";
-    (this.gl.canvas as HTMLCanvasElement).style.height = (y2 - y1) + "px";
+    (this.gl.canvas as HTMLCanvasElement).style.width = (x2 + x1) + "px";
+    (this.gl.canvas as HTMLCanvasElement).style.height = (y2 + y1) + "px";
+    (this.gl.canvas as HTMLCanvasElement).width = (x2 + x1);
+    (this.gl.canvas as HTMLCanvasElement).height = (y2 + y1);
+
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }
   
