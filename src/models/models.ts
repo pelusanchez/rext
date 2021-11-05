@@ -7,25 +7,30 @@ export interface vec3 {
 export interface Config {
   resolutionLimit: number;
   editionResolutionLimit: number;
+  autoZoom?: boolean;
+  width?: number;
+  height?: number;
 }
+
+export type Nullable<T> = T | null; 
 
 export type KeyValue<V> = { 
   [key: string]: V
 };
 
-export interface f2Number {
+export interface vec2 {
 	x: number;
 	y: number;
 };
 
-export interface f4Number {
+export interface vec4 {
 	x: number;
 	y: number;
 	z: number;
 	w: number;
 };
 
-export type ParamValue = number | f2Number | f4Number;
+export type ParamValue = number | vec2 | vec4;
 /* Trick for be able to do this.params[paramKey] */
 export type ParamsAbs = KeyValue<ParamValue>
 
@@ -55,8 +60,9 @@ export interface Params extends ParamsAbs {
 	darkColor: number;
 	darkSat: number;
 	rotation: number;
-	rotation_center: f2Number;
-	scale: f2Number;
-	translate: f2Number;
-	size: f2Number;
+	rotation_center: vec2;
+	scale: vec2;
+	translate: vec2;
+	size: vec2;
+	zoom: number;
 }

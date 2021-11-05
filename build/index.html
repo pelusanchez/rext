@@ -82,13 +82,27 @@
         
       }
 
+      function download() {
+        rext.blob().then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          document.querySelector('body').appendChild(a);
+          a.href = url;
+          a.download = 'output.jpeg';
+          a.click();
+          URL.revokeObjectURL(url);
+          document.querySelector('body').removeChild(a);
+        })
+      }
+
       window.addEventListener('load', () => {
         rext.setCanvas(document.querySelector("#frame"));
         document.querySelector("#file").addEventListener("change", onFileUpload)
         document.querySelector("#rext-params").value = JSON.stringify(defaultParams, null, 2)
         document.querySelector("#rext-params").addEventListener("change", updateParams);
-
-        rext.load("/test.jpg");
+        rext.load("/high-res.jpg").then(() => {
+          rext.autoZoom();
+        }).catch(console.error);
       });
       
     </script>
@@ -102,6 +116,7 @@
       <div>
         <textarea id="rext-params"></textarea>
         <button onClick="updateParams">Apply</button>
+        <button onClick="download">download</button>
       </div>
     </div>
   </body>

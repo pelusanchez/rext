@@ -1,8 +1,6 @@
-
-import { getCuadraticFunction } from './lib/math'
-import { Config, f2Number, Params } from './models/models';
+import { vec2, Params, Config, Nullable } from './models/models';
 import { asArray, hsv2rgb } from './lib/color'
-import { defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
+import { defaultConfig, defaultParams, paramsCallbacks, TEMP_DATA } from './lib/constants';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders/index'
 import { Log } from './log/log';
 import { LogFacade } from './log/LogFacade';
@@ -17,11 +15,11 @@ export class RextEditor {
 
   private params: Params = clone(defaultParams)
   private gl : WebGLRenderingContext;
-  private canvas : HTMLCanvasElement;
   private program : any = null;
-  private realImage : HTMLImageElement | null = null;
-  private currentImage : HTMLImageElement | null = null;
-  private context : Context | null = null;
+  private realImage : Nullable<HTMLImageElement> = null;
+  private currentImage : Nullable<HTMLImageElement> = null;
+  private context : Nullable<Context> = null;
+  private config: Config = defaultConfig;
 
   private WIDTH: number = 0;
   private HEIGHT: number = 0;
@@ -46,7 +44,8 @@ export class RextEditor {
   }
 
   public setCanvas(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
+    this.config.width = canvas.width;
+    this.config.height = canvas.height;
     this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
   }
 
@@ -91,7 +90,7 @@ export class RextEditor {
     return Array.from(callbacks)
   }
 
-  private updateParam(param: string, value: number | f2Number) {
+  private updateParam(param: string, value: number | vec2) {
     const keys = Object.keys(this.params)
     if (keys.includes(param)) {
       // @ts-ignore
@@ -101,16 +100,18 @@ export class RextEditor {
     }
   }
 
-  public resize(width: number, height: number) {
-    if (this.realImage == null) {
-      this.log.warn('Resize called without image');
-      return;
-    }
-    const image = new Image();
-    image.width = width;
-    image.height = height;
-    this.loadImage(image);
-  	image.src = this.realImage.src;
+  public autoZoom() {
+    const widthX = this.config.width / this.WIDTH;
+    const heightX = this.config.height / this.HEIGHT;
+    const maxX = Math.max(widthX, heightX);
+    console.log(maxX)
+    this.setZoom(maxX);
+  }
+
+  public setZoom(zoom: number) {
+    this.params.zoom = zoom;
+    this.gl.canvas.style.width = this.WIDTH * zoom + "px";
+    this.gl.canvas.style.height = this.HEIGHT * zoom + "px";
   }
 
   public getWidth() {
@@ -142,29 +143,38 @@ export class RextEditor {
     return [x, y];
   }
   
-  private loadImage(image: HTMLImageElement) {
-    image.onload = () => {
-      if (this.currentImage == null) {
-        this.log.warn('Load Image called without image.');
-        return;
+  private loadImage(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => {
+        if (this.currentImage == null) {
+          this.log.warn('Load Image called without image.');
+          return;
+        }
+        this.WIDTH = image.width;
+        this.HEIGHT = image.height;
+        this.fitCanvas(image.width, image.height);
+        this.create(this.currentImage);
+        resolve();
       }
-      this.WIDTH = image.width;
-      this.HEIGHT = image.height;
-      this.fitCanvas(image.width, image.height);
-      this.create(this.currentImage);
-    }
-    image.onerror = () => {
-      this.log.error("Error while loading the image.")
-    }
-    this.currentImage = image
+      image.onerror = (err) => {
+        this.log.error("Error while loading the image.")
+        reject(err)
+      }
+      this.currentImage = image;
+      image.src = url;
+      this.realImage = image;
+    })
   }
 
-  public load(url: string) {
+  public async load(url: string, config?: Config) {
     this.log.log("Version 1.2.6")
     // Save real image as a copy
-  	this.realImage = new Image();
-    this.loadImage(this.realImage);
-  	this.realImage.src = url;
+    if (config !== undefined) { 
+      this.config = config;
+    }
+    await this.loadImage(url);
+    return this;
   }
 
   public setLog(log: Log) {
@@ -191,13 +201,13 @@ export class RextEditor {
         return reject();
       }
       this.create(this.realImage);
-      this.canvas.toBlob((blob) => {
+      this.gl.canvas.toBlob((blob) => {
         if (blob === null) {
           this.log.error('Unable to generate the blob file');
           return reject();
         }
         resolve(blob)
-      }, type || "image/jpeg", quality || 0.95);
+      }, type || "image/jpeg", quality || 1);
     });
   }
 
@@ -267,12 +277,7 @@ export class RextEditor {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.context.getBuffer("TEXCOORD_BUFFER"));
     this.gl.vertexAttribPointer(this.context.getAttribute("a_texCoord"), 2, this.gl.FLOAT, false, 0, 0);
 
-    // set the resolution
-    const x2 = this.WIDTH * this.params.size.x;
-    const y2 = this.HEIGHT * this.params.size.y;
-    const x1 = this.params.translate.x * this.WIDTH;
-    const y1 = this.params.translate.y * this.HEIGHT;
-    this.gl.uniform2f(this.context.getUniform("u_resolution"), x2 - x1, y2 - y1);
+    this.gl.uniform2f(this.context.getUniform("u_resolution"), this.WIDTH, this.HEIGHT);
     this.gl.uniform2f(this.context.getUniform("u_textureSize"), this.WIDTH, this.HEIGHT);
     this.gl.uniform1f(this.context.getUniform("u_brightness"), this.params.brightness);
     this.gl.uniform1f(this.context.getUniform("u_contrast"), this.params.contrast);
@@ -299,12 +304,14 @@ export class RextEditor {
     this.gl.uniform1fv(this.context.getUniform("u_kernel[0]"), this.uniforms.kernel);
     this.gl.uniform1f(this.context.getUniform("u_kernelWeight"), sumArray(this.uniforms.kernel));
 
-    /* Adjust canvas size */
+    /* Adjust canvas size: Cropping */
 
-    (this.gl.canvas as HTMLCanvasElement).style.width = (x2 + x1) + "px";
-    (this.gl.canvas as HTMLCanvasElement).style.height = (y2 + y1) + "px";
-    (this.gl.canvas as HTMLCanvasElement).width = (x2 + x1);
-    (this.gl.canvas as HTMLCanvasElement).height = (y2 + y1);
+    const x2 = this.WIDTH * this.params.size.x;
+    const y2 = this.HEIGHT * this.params.size.y;
+    (this.gl.canvas as HTMLCanvasElement).style.width = this.params.zoom * x2 + "px";
+    (this.gl.canvas as HTMLCanvasElement).style.height = this.params.zoom * y2 + "px";
+    (this.gl.canvas as HTMLCanvasElement).width = x2;
+    (this.gl.canvas as HTMLCanvasElement).height = y2;
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }

@@ -10,11 +10,11 @@ export interface Config {
 export declare type KeyValue<V> = {
     [key: string]: V;
 };
-export interface f2Number {
+export interface vec2 {
     x: number;
     y: number;
 }
-export declare type ParamsAbs = KeyValue<number | f2Number>;
+export declare type ParamsAbs = KeyValue<number | vec2>;
 export interface Params extends ParamsAbs {
     hdr: number;
     exposure: number;
@@ -41,7 +41,7 @@ export interface Params extends ParamsAbs {
     darkColor: number;
     darkSat: number;
     rotation: number;
-    rotation_center: f2Number;
-    scale: f2Number;
-    translate: f2Number;
+    rotation_center: vec2;
+    scale: vec2;
+    translate: vec2;
 }

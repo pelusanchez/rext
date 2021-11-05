@@ -1,7 +1,12 @@
 /**
  * Constants
  */
-import { Params, KeyValue } from "../models/models";
+import { Params, KeyValue, Config } from "../models/models";
+
+export const defaultConfig : Config = {
+  resolutionLimit: -1,
+  editionResolutionLimit: -1,
+};
 
 export const defaultParams : Params = {
   hdr: 0,
@@ -45,6 +50,7 @@ export const defaultParams : Params = {
     x: 1,
     y: 1,
   },
+  zoom: 1,
 };
 
 /**
