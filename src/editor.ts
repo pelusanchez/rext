@@ -9,12 +9,17 @@ import { createProgram, createShader, createTexture } from './shaders';
 import { Context } from './lib/context';
 
 const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
+const CANVAS_OPTIONS: WebGLContextAttributes = { 
+  alpha: false,
+  antialias: false,
+};
 
 /* BEGIN WEBGL PART */
 export class RextEditor {
 
   private params: Params = clone(defaultParams)
   private gl : WebGLRenderingContext;
+  private canvas : HTMLCanvasElement;
   private program : any = null;
   private realImage : Nullable<HTMLImageElement> = null;
   private currentImage : Nullable<HTMLImageElement> = null;
@@ -46,7 +51,8 @@ export class RextEditor {
   public setCanvas(canvas: HTMLCanvasElement) {
     this.config.width = canvas.width;
     this.config.height = canvas.height;
-    this.gl = canvas.getContext("webgl") || (canvas.getContext("experimental-webgl") as WebGLRenderingContext);
+    this.canvas = canvas;
+    this.gl = canvas.getContext("webgl", CANVAS_OPTIONS) || (canvas.getContext("experimental-webgl", CANVAS_OPTIONS) as WebGLRenderingContext);
   }
 
   runCallback(callbackName: string) {
@@ -104,14 +110,13 @@ export class RextEditor {
     const widthX = this.config.width / this.WIDTH;
     const heightX = this.config.height / this.HEIGHT;
     const maxX = Math.max(widthX, heightX);
-    console.log(maxX)
     this.setZoom(maxX);
   }
 
   public setZoom(zoom: number) {
     this.params.zoom = zoom;
-    this.gl.canvas.style.width = this.WIDTH * zoom + "px";
-    this.gl.canvas.style.height = this.HEIGHT * zoom + "px";
+    this.canvas.style.width = this.WIDTH * zoom + "px";
+    this.canvas.style.height = this.HEIGHT * zoom + "px";
   }
 
   public getWidth() {
@@ -201,7 +206,7 @@ export class RextEditor {
         return reject();
       }
       this.create(this.realImage);
-      this.gl.canvas.toBlob((blob) => {
+      this.canvas.toBlob((blob: Blob) => {
         if (blob === null) {
           this.log.error('Unable to generate the blob file');
           return reject();
@@ -230,7 +235,7 @@ export class RextEditor {
     this.context = new Context(this.gl, this.program);
 
     this.log.log("[IMAGE] width = " + this.WIDTH + ", height = " + this.HEIGHT);
-    this.log.log("[CANVAS] width = " + this.gl.canvas.width + ", height = " + this.gl.canvas.height);
+    this.log.log("[CANVAS] width = " + this.canvas.width + ", height = " + this.canvas.height);
 
     this.setRectangle(this.context.createBuffer("ARRAY_BUFFER"), 0.0, 0.0, this.WIDTH, this.HEIGHT);
     this.setRectangle(this.context.createBuffer("TEXCOORD_BUFFER"), 0, 0, 1.0, 1.0);
@@ -260,8 +265,8 @@ export class RextEditor {
   }
 
   private fitCanvas(width: number, height: number) {
-    this.gl.canvas.width = width;
-    this.gl.canvas.height = height;
+    this.canvas.width = width;
+    this.canvas.height = height;
   }
 
   private update() {
@@ -308,10 +313,10 @@ export class RextEditor {
 
     const x2 = this.WIDTH * this.params.size.x;
     const y2 = this.HEIGHT * this.params.size.y;
-    (this.gl.canvas as HTMLCanvasElement).style.width = this.params.zoom * x2 + "px";
-    (this.gl.canvas as HTMLCanvasElement).style.height = this.params.zoom * y2 + "px";
-    (this.gl.canvas as HTMLCanvasElement).width = x2;
-    (this.gl.canvas as HTMLCanvasElement).height = y2;
+    this.canvas.style.width = this.params.zoom * x2 + "px";
+    this.canvas.style.height = this.params.zoom * y2 + "px";
+    this.canvas.width = x2;
+    this.canvas.height = y2;
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }
