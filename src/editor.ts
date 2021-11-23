@@ -110,8 +110,8 @@ export class RextEditor {
 
   public setZoom(zoom: number) {
     this.params.zoom = zoom;
-    this.gl.canvas.style.width = this.WIDTH * zoom + "px";
-    this.gl.canvas.style.height = this.HEIGHT * zoom + "px";
+    this.getCanvas().style.width = this.WIDTH * zoom + "px";
+    this.getCanvas().style.height = this.HEIGHT * zoom + "px";
   }
 
   public getWidth() {
@@ -130,6 +130,11 @@ export class RextEditor {
     this.HEIGHT = height;
   }
 
+  private getCanvas(): HTMLCanvasElement {
+    return this.gl.canvas as HTMLCanvasElement;
+  }
+
+  // FIXME: To Math class
   private get2dRotation(): number[] {
     return [
       Math.sin(this.params.rotation),
@@ -201,7 +206,7 @@ export class RextEditor {
         return reject();
       }
       this.create(this.realImage);
-      this.gl.canvas.toBlob((blob) => {
+      this.getCanvas().toBlob((blob) => {
         if (blob === null) {
           this.log.error('Unable to generate the blob file');
           return reject();
@@ -308,10 +313,10 @@ export class RextEditor {
 
     const x2 = this.WIDTH * this.params.size.x;
     const y2 = this.HEIGHT * this.params.size.y;
-    (this.gl.canvas as HTMLCanvasElement).style.width = this.params.zoom * x2 + "px";
-    (this.gl.canvas as HTMLCanvasElement).style.height = this.params.zoom * y2 + "px";
-    (this.gl.canvas as HTMLCanvasElement).width = x2;
-    (this.gl.canvas as HTMLCanvasElement).height = y2;
+    this.getCanvas().style.width = this.params.zoom * x2 + "px";
+    this.getCanvas().style.height = this.params.zoom * y2 + "px";
+    this.getCanvas().width = x2;
+    this.getCanvas().height = y2;
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }
