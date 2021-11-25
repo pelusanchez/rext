@@ -1,7 +1,8 @@
 /**
  * Constants
  */
-import { Params, KeyValue } from "../models/models";
+import { Params, KeyValue, Config } from "../models/models";
+export declare const defaultConfig: Config;
 export declare const defaultParams: Params;
 /**
  * Callbacks needed to be recalculated when changing parameters
