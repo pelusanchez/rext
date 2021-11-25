@@ -26,6 +26,7 @@ export class RextEditor {
   private context : Nullable<Context> = null;
   private config: Config = defaultConfig;
 
+  private onParamsChangeCallbacks: Function[] = [];
   private WIDTH: number = 0;
   private HEIGHT: number = 0;
   private log: Log = new LogFacade();
@@ -68,6 +69,10 @@ export class RextEditor {
     this.log.warn(`No callback ${callbackName} exists`)
   }
 
+  public onParamsChange(callback: Function) {
+    this.onParamsChangeCallbacks.push(callback);
+  }
+
   updateParams(params: Params) {
     /* Calculate difference */
     const updateKeys = Object.keys(this.params).filter(paramKey => {
@@ -75,7 +80,7 @@ export class RextEditor {
     })
 
     updateKeys.forEach(paramKey => {
-      this.updateParam(paramKey, params[paramKey]);
+      this._updateParam(paramKey, params[paramKey]);
     })
 
     const updates = this.getCallbacks(updateKeys);
@@ -86,6 +91,15 @@ export class RextEditor {
     })
 
     this.update();
+    this.onParamsChangeCallbacks.forEach(callback => {
+      if (callback) {
+        try {
+          callback(this.params)
+        } catch (err) {
+          // Ignored
+        }
+      }
+    });
   }
 
   getCallbacks(updatedParams: string[]) : string[] {
@@ -96,7 +110,8 @@ export class RextEditor {
     return Array.from(callbacks)
   }
 
-  private updateParam(param: string, value: number | vec2) {
+  // Do not call this method from any other function than updateParams
+  private _updateParam(param: string, value: number | vec2) {
     const keys = Object.keys(this.params)
     if (keys.includes(param)) {
       // @ts-ignore
@@ -114,9 +129,8 @@ export class RextEditor {
   }
 
   public setZoom(zoom: number) {
-    this.params.zoom = zoom;
-    this.getCanvas().style.width = this.WIDTH * zoom + "px";
-    this.getCanvas().style.height = this.HEIGHT * zoom + "px";
+    this.updateParams({ ...this.params, zoom: zoom });
+    this.update();
   }
 
   public getWidth() {
@@ -323,8 +337,10 @@ export class RextEditor {
   private applyCrop() {
     const x2 = this.WIDTH * this.params.size.x;
     const y2 = this.HEIGHT * this.params.size.y;
-    this.getCanvas().style.width = this.params.zoom * x2 + "px";
-    this.getCanvas().style.height = this.params.zoom * y2 + "px";
+    const cw = (this.params.zoom * x2);
+    const ch = (this.params.zoom * y2);
+    this.getCanvas().style.width = cw + "px";
+    this.getCanvas().style.height = ch + "px";
     this.getCanvas().width = x2;
     this.getCanvas().height = y2;
   }

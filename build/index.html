@@ -57,7 +57,8 @@
         size: {
           x: 1,
           y: 1,
-        }
+        },
+        zoom: 1,
       };
 
       function onFileUpload(e) {
@@ -101,6 +102,8 @@
         document.querySelector("#rext-params").value = JSON.stringify(defaultParams, null, 2)
         document.querySelector("#rext-params").addEventListener("change", updateParams);
         rext.load("/high-res.jpg").then(() => {
+          rext.onParamsChange(params => 
+            document.querySelector("#rext-params").value = JSON.stringify(params, null, 2))
           rext.autoZoom();
         }).catch(console.error);
       });
