@@ -192,7 +192,7 @@ export class RextEditor {
   }
 
   public async load(url: string, config?: Config) {
-    this.log.log("Version 1.2.7")
+    this.log.log("Version 1.4.0")
     // Save real image as a copy
     if (config !== undefined) { 
       this.config = config;

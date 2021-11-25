@@ -1,4 +1,4 @@
-import { Config, Params } from './models/models';
+import { Params, Config } from './models/models';
 import { Log } from './log/log';
 export declare class RextEditor {
     private params;
@@ -7,50 +7,50 @@ export declare class RextEditor {
     private program;
     private realImage;
     private currentImage;
-    private pointers;
+    private context;
+    private config;
+    private onParamsChangeCallbacks;
     private WIDTH;
     private HEIGHT;
-    log: Log;
-    private config;
+    private log;
     private uniforms;
     private LIGHT_MATCH;
-    constructor(canvas?: HTMLCanvasElement, config?: Config);
+    constructor(canvas?: HTMLCanvasElement);
     setCanvas(canvas: HTMLCanvasElement): void;
     runCallback(callbackName: string): void;
+    onParamsChange(callback: Function): void;
     updateParams(params: Params): void;
     getCallbacks(updatedParams: string[]): string[];
-    private updateParam;
-    resize(width: number, height: number): void;
+    private _updateParam;
+    autoZoom(): void;
+    setZoom(zoom: number): void;
     getWidth(): number;
     getHeight(): number;
-    rotateFrom(x: number, y: number): void;
-    rotateFromCenter(x: number, y: number): void;
+    private setWidth;
+    private setHeight;
+    private getCanvas;
     private get2dRotation;
     private get2dRotationCenter;
     private loadImage;
-    load(url: string): void;
+    load(url: string, config?: Config): Promise<this>;
     setLog(log: Log): void;
-    updateKernel(): void;
-    updateTemptint(): void;
+    private updateTemptint;
     /**
      * Lightning generation:
      * Map brightness values depending on Brightness, Contrast... etc
      */
-    generateLightning(): void;
-    /**
-     * kernelNormalization
-     * Compute the total weight of the kernel in order to normalize it
-     */
-    kernelNormalization(kernel: number[]): number;
+    private generateLightning;
     blob(type?: string, quality?: number): Promise<Blob>;
     /**
-     * render
+     * create
      * Prepare the environment to edit the image
      * image: Image element to edit (Image object)
      * context: webgl context. Default: __window.gl
      * SET_FULL_RES: no resize the image to edit. Default: false (resize the image)
      */
-    private render;
-    update(): void;
+    private create;
+    private fitCanvas;
+    private update;
+    private applyCrop;
     private setRectangle;
 }
