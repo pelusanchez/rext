@@ -115,8 +115,8 @@ export class RextEditor {
 
   public setZoom(zoom: number) {
     this.params.zoom = zoom;
-    this.canvas.style.width = this.WIDTH * zoom + "px";
-    this.canvas.style.height = this.HEIGHT * zoom + "px";
+    this.getCanvas().style.width = this.WIDTH * zoom + "px";
+    this.getCanvas().style.height = this.HEIGHT * zoom + "px";
   }
 
   public getWidth() {
@@ -135,6 +135,11 @@ export class RextEditor {
     this.HEIGHT = height;
   }
 
+  private getCanvas(): HTMLCanvasElement {
+    return this.gl.canvas as HTMLCanvasElement;
+  }
+
+  // FIXME: To Math class
   private get2dRotation(): number[] {
     return [
       Math.sin(this.params.rotation),
@@ -206,7 +211,7 @@ export class RextEditor {
         return reject();
       }
       this.create(this.realImage);
-      this.canvas.toBlob((blob: Blob) => {
+      this.getCanvas().toBlob((blob) => {
         if (blob === null) {
           this.log.error('Unable to generate the blob file');
           return reject();
@@ -310,17 +315,20 @@ export class RextEditor {
     this.gl.uniform1f(this.context.getUniform("u_kernelWeight"), sumArray(this.uniforms.kernel));
 
     /* Adjust canvas size: Cropping */
-
-    const x2 = this.WIDTH * this.params.size.x;
-    const y2 = this.HEIGHT * this.params.size.y;
-    this.canvas.style.width = this.params.zoom * x2 + "px";
-    this.canvas.style.height = this.params.zoom * y2 + "px";
-    this.canvas.width = x2;
-    this.canvas.height = y2;
+    this.applyCrop();
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }
   
+  private applyCrop() {
+    const x2 = this.WIDTH * this.params.size.x;
+    const y2 = this.HEIGHT * this.params.size.y;
+    this.getCanvas().style.width = this.params.zoom * x2 + "px";
+    this.getCanvas().style.height = this.params.zoom * y2 + "px";
+    this.getCanvas().width = x2;
+    this.getCanvas().height = y2;
+  }
+
   private setRectangle(buffer: WebGLBuffer, x: number, y: number, width: number, height: number) {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
     var x1 = x;
