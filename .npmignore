@@ -6,3 +6,6 @@ package-lock.json
 tsconfig.json
 webpack.config.js
 src/
+build/test.jpg
+build/high-res.jpg
+build/index.html
