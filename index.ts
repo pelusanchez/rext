@@ -1,1 +1,1 @@
-export { RextEditor } from './src'
+export { RextEditor } from './dist'

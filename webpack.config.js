@@ -26,7 +26,7 @@ module.exports = {
   output: {
     filename: 'index.js',
     library: "RextEditor",
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'build'),
   },
   devServer: {
     static: {

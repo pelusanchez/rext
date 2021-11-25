@@ -1,12 +1,14 @@
 {
   "name": "rext-image-editor",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "REXT is a client side image editor that uses GPU.",
   "scripts": {
     "build": "jest && webpack",
     "dev": "webpack serve",
+    "generate-st": "node ./buildShaders.js && webpack",
+    "generate": "jest && tsc",
     "test": "jest"
   },
   "repository": {
