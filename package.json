@@ -1,6 +1,6 @@
 {
   "name": "rext-image-editor",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "REXT is a client side image editor that uses GPU.",

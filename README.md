@@ -97,7 +97,12 @@ Sample: [https://rext.es](https://rext.es)
         translate: {
           x: 0,
           y: 0,
-        }
+        },
+        "size": {
+          "x": 1,
+          "y": 1
+        },
+        "zoom": 0.15
       };
 
       function onFileUpload(e) {
@@ -194,5 +199,7 @@ rext.updateParams(nextParams : Params)
 | darkSat | number |
 | rotation | number (Radians) |
 | rotation_center | 2d number { x: number; y: number } |
-| scale | 2d number { x: number; y: number }|
-| translate | 2d number { x: number; y: number }|
+| scale | 2d number { x: number; y: number } |
+| translate | 2d number { x: number; y: number } |
+| size | 2d number { x: number; y: number } |
+| zoom | number |
